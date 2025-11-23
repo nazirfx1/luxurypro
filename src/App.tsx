@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -80,6 +81,38 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CapRateCalculator />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/lease"
+              element={
+                <ProtectedRoute>
+                  {React.createElement(React.lazy(() => import("./pages/leases/MyLease")))}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/maintenance"
+              element={
+                <ProtectedRoute>
+                  {React.createElement(React.lazy(() => import("./pages/maintenance/MaintenanceRequests")))}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/maintenance/new"
+              element={
+                <ProtectedRoute>
+                  {React.createElement(React.lazy(() => import("./pages/maintenance/NewMaintenanceRequest")))}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/messages"
+              element={
+                <ProtectedRoute>
+                  {React.createElement(React.lazy(() => import("./pages/messages/Messages")))}
                 </ProtectedRoute>
               }
             />
