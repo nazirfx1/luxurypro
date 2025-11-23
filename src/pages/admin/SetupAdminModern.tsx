@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const SetupAdminModern = () => {
   const [loading, setLoading] = useState(false);
@@ -11,31 +12,19 @@ const SetupAdminModern = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin-user`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-secret': 'create-admin-user-secret-2024',
-          },
-          body: JSON.stringify({
-            email: 'nazirfxone@gmail.com',
-            password: 'hacksom-1212',
-            full_name: 'Nazir Ismail',
-            role: 'super_admin',
-          }),
-        }
-      );
+      // Call the database function directly using Supabase RPC
+      const { data, error } = await supabase.rpc('rpc_setup_initial_admin');
 
-      const data = await response.json();
+      if (error) {
+        throw new Error(error.message || 'Failed to create admin user');
+      }
 
-      if (!response.ok) {
+      if (!data.success) {
         throw new Error(data.error || 'Failed to create admin user');
       }
 
       setSuccess(true);
-      console.log('Super Admin user created successfully!');
+      console.log('Super Admin user created successfully!', data);
     } catch (error) {
       console.error('Error:', error);
       alert(error instanceof Error ? error.message : 'Failed to create admin user');

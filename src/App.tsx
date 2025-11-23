@@ -15,10 +15,7 @@ import PropertyDetail from "./pages/properties/PropertyDetail";
 import FinancialDashboard from "./pages/financials/FinancialDashboard";
 import CapRateCalculator from "./pages/financials/CapRateCalculator";
 import NotFound from "./pages/NotFound";
-import SetupAdmin from "./pages/admin/SetupAdmin";
-import SetupAdminSimple from "./pages/admin/SetupAdminSimple";
 import SetupAdminModern from "./pages/admin/SetupAdminModern";
-import TestSetup from "./pages/TestSetup";
 
 const queryClient = new QueryClient();
 
