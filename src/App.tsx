@@ -116,6 +116,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/setup-admin" element={React.createElement(React.lazy(() => import("./pages/admin/SetupAdmin")))} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
