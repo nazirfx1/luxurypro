@@ -33,10 +33,10 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => window.location.href = '/auth'}>
               Sign In
             </Button>
-            <Button size="sm" className="shadow-gold">
+            <Button size="sm" className="shadow-gold" onClick={() => window.location.href = '/auth'}>
               Get Started
             </Button>
           </div>
@@ -66,10 +66,10 @@ const Navbar = () => {
               Contact
             </a>
             <div className="flex flex-col space-y-2 pt-4">
-              <Button variant="ghost" size="sm" className="w-full">
+              <Button variant="ghost" size="sm" className="w-full" onClick={() => window.location.href = '/auth'}>
                 Sign In
               </Button>
-              <Button size="sm" className="w-full shadow-gold">
+              <Button size="sm" className="w-full shadow-gold" onClick={() => window.location.href = '/auth'}>
                 Get Started
               </Button>
             </div>

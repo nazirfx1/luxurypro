@@ -39,7 +39,7 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in-up delay-400">
-            <Button size="lg" className="gap-2 shadow-gold hover:shadow-gold/50 transition-all">
+            <Button size="lg" className="gap-2 shadow-gold hover:shadow-gold/50 transition-all" onClick={() => window.location.href = '/auth'}>
               Get Started <ArrowRight className="w-5 h-5" />
             </Button>
             <Button size="lg" variant="outline" className="gap-2 border-primary/20 hover:bg-primary/5">
