@@ -15,6 +15,10 @@ import PropertyDetail from "./pages/properties/PropertyDetail";
 import FinancialDashboard from "./pages/financials/FinancialDashboard";
 import CapRateCalculator from "./pages/financials/CapRateCalculator";
 import NotFound from "./pages/NotFound";
+import SetupAdmin from "./pages/admin/SetupAdmin";
+import SetupAdminSimple from "./pages/admin/SetupAdminSimple";
+import SetupAdminModern from "./pages/admin/SetupAdminModern";
+import TestSetup from "./pages/TestSetup";
 
 const queryClient = new QueryClient();
 
@@ -116,7 +120,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/setup-admin" element={React.createElement(React.lazy(() => import("./pages/admin/SetupAdmin")))} />
+            <Route path="/setup-admin" element={<SetupAdminModern />} />
             <Route
               path="/dashboard/users"
               element={
