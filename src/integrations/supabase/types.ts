@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_credentials: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          is_used: boolean | null
+          password_hash: string
+          role: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          is_used?: boolean | null
+          password_hash: string
+          role?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          is_used?: boolean | null
+          password_hash?: string
+          role?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      admin_setup: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_setup_complete: boolean | null
+          setup_completed_at: string | null
+          setup_completed_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_setup_complete?: boolean | null
+          setup_completed_at?: string | null
+          setup_completed_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_setup_complete?: boolean | null
+          setup_completed_at?: string | null
+          setup_completed_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       analytics_property_metrics: {
         Row: {
           created_at: string | null
