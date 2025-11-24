@@ -1,0 +1,12 @@
+{
+  "supabase": {
+    "run_migrations": true,
+    "migration_dir": "supabase/migrations",
+    "require_sql_migrations": true,
+    "allow_skip": false
+  },
+  "deployment": {
+    "auto_deploy": true,
+    "auto_sync": true
+  }
+}
