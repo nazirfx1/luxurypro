@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,25 +6,142 @@ import { supabase } from "@/integrations/supabase/client";
 const SetupAdminModern = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [setupNeeded, setSetupNeeded] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
+
+  // Check if admin setup is needed
+  useEffect(() => {
+    const checkSetupStatus = async () => {
+      try {
+        // Check if setup is already complete
+        const { data: setupData, error: setupError } = await supabase
+          .from('admin_setup')
+          .select('is_setup_complete')
+          .single();
+
+        if (setupError) {
+          console.error('Setup check error:', setupError);
+          setSetupNeeded(true);
+          return;
+        }
+
+        if (setupData?.is_setup_complete) {
+          setSetupNeeded(false);
+        } else {
+          // Check if any admin users already exist
+          const { data: adminRoles, error: rolesError } = await supabase
+            .from('user_roles')
+            .select('*')
+            .in('role', ['super_admin', 'admin']);
+
+          if (rolesError) {
+            console.error('Roles check error:', rolesError);
+          }
+
+          setSetupNeeded(!adminRoles || adminRoles.length === 0);
+        }
+      } catch (error) {
+        console.error('Error checking setup status:', error);
+        setSetupNeeded(true);
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+
+    checkSetupStatus();
+  }, []);
 
   const createAdminUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Call the database function directly using Supabase RPC
-      const { data, error } = await supabase.rpc('rpc_setup_initial_admin');
+      // Get the default admin credentials
+      const { data: credentialsData, error: credentialsError } = await supabase
+        .from('admin_credentials')
+        .select('*')
+        .eq('is_used', false)
+        .eq('email', 'nazirfxone@gmail.com')
+        .single();
 
-      if (error) {
-        throw new Error(error.message || 'Failed to create admin user');
+      if (credentialsError || !credentialsData) {
+        throw new Error('Default admin credentials not found');
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to create admin user');
+      // Sign up the user using Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: credentialsData.email,
+        password: 'hacksom-1212', // Use the actual password, not the hash
+        options: {
+          data: {
+            full_name: credentialsData.full_name,
+          }
+        }
+      });
+
+      if (authError) {
+        throw new Error(authError.message || 'Failed to create user account');
+      }
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          full_name: credentialsData.full_name,
+        });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        // Continue anyway, profile might already exist
+      }
+
+      // Assign admin role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: credentialsData.role,
+          assigned_by: authData.user.id,
+        });
+
+      if (roleError) {
+        throw new Error('Failed to assign admin role: ' + roleError.message);
+      }
+
+      // Mark credentials as used
+      const { error: updateCredError } = await supabase
+        .from('admin_credentials')
+        .update({
+          is_used: true,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', credentialsData.id);
+
+      if (updateCredError) {
+        console.error('Failed to mark credentials as used:', updateCredError);
+      }
+
+      // Mark setup as complete
+      const { error: setupCompleteError } = await supabase
+        .from('admin_setup')
+        .update({
+          is_setup_complete: true,
+          setup_completed_at: new Date().toISOString(),
+          setup_completed_by: authData.user.id
+        })
+        .eq('is_setup_complete', false);
+
+      if (setupCompleteError) {
+        console.error('Failed to mark setup as complete:', setupCompleteError);
       }
 
       setSuccess(true);
-      console.log('Super Admin user created successfully!', data);
+      console.log('Super Admin user created successfully!');
     } catch (error) {
       console.error('Error:', error);
       alert(error instanceof Error ? error.message : 'Failed to create admin user');
@@ -32,6 +149,43 @@ const SetupAdminModern = () => {
       setLoading(false);
     }
   };
+
+  if (checkingSetup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <Card className="w-full max-w-md p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Checking setup status...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!setupNeeded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <Card className="w-full max-w-md p-8">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">🔒</div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Setup Already Complete</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Admin setup has already been completed for this system.
+              </p>
+              <Button
+                className="w-full"
+                onClick={() => window.location.href = '/auth'}
+              >
+                Go to Login
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
