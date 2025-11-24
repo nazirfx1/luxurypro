@@ -90,10 +90,11 @@ const SetupAdminModern = () => {
       // Create profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .insert([{
           id: authData.user.id,
           full_name: credentialsData.full_name,
-        });
+          email: credentialsData.email,
+        }]);
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
@@ -103,11 +104,11 @@ const SetupAdminModern = () => {
       // Assign admin role
       const { error: roleError } = await supabase
         .from('user_roles')
-        .insert({
+        .insert([{
           user_id: authData.user.id,
-          role: credentialsData.role,
+          role: credentialsData.role as any,
           assigned_by: authData.user.id,
-        });
+        }]);
 
       if (roleError) {
         throw new Error('Failed to assign admin role: ' + roleError.message);
