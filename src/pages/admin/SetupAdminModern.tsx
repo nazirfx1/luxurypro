@@ -56,89 +56,27 @@ const SetupAdminModern = () => {
     setLoading(true);
 
     try {
-      // Get the default admin credentials
-      const { data: credentialsData, error: credentialsError } = await supabase
-        .from('admin_credentials')
-        .select('*')
-        .eq('is_used', false)
-        .eq('email', 'nazirfxone@gmail.com')
-        .single();
-
-      if (credentialsError || !credentialsData) {
-        throw new Error('Default admin credentials not found');
-      }
-
-      // Sign up the user using Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: credentialsData.email,
-        password: 'hacksom-1212', // Use the actual password, not the hash
-        options: {
-          data: {
-            full_name: credentialsData.full_name,
-          }
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-secret': 'create-admin-user-secret-2024',
+          },
+          body: JSON.stringify({
+            email: 'nazirfxone@gmail.com',
+            password: 'hacksom-1212',
+            full_name: 'Nazir Ismail',
+            role: 'super_admin',
+          }),
         }
-      });
+      );
 
-      if (authError) {
-        throw new Error(authError.message || 'Failed to create user account');
-      }
+      const data = await response.json();
 
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: authData.user.id,
-          full_name: credentialsData.full_name,
-          email: credentialsData.email,
-        }]);
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Continue anyway, profile might already exist
-      }
-
-      // Assign admin role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: authData.user.id,
-          role: credentialsData.role as any,
-          assigned_by: authData.user.id,
-        }]);
-
-      if (roleError) {
-        throw new Error('Failed to assign admin role: ' + roleError.message);
-      }
-
-      // Mark credentials as used
-      const { error: updateCredError } = await supabase
-        .from('admin_credentials')
-        .update({
-          is_used: true,
-          used_at: new Date().toISOString()
-        })
-        .eq('id', credentialsData.id);
-
-      if (updateCredError) {
-        console.error('Failed to mark credentials as used:', updateCredError);
-      }
-
-      // Mark setup as complete
-      const { error: setupCompleteError } = await supabase
-        .from('admin_setup')
-        .update({
-          is_setup_complete: true,
-          setup_completed_at: new Date().toISOString(),
-          setup_completed_by: authData.user.id
-        })
-        .eq('is_setup_complete', false);
-
-      if (setupCompleteError) {
-        console.error('Failed to mark setup as complete:', setupCompleteError);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create admin user');
       }
 
       setSuccess(true);
