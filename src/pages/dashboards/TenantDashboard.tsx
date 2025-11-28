@@ -13,43 +13,46 @@ const TenantDashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Tenant Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">Tenant Dashboard</h1>
+            <p className="text-muted-foreground mt-1 text-sm md:text-base">
               Manage your lease and requests
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => navigate("/dashboard/maintenance/new")} className="gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+            <Button onClick={() => navigate("/dashboard/maintenance/new")} className="gap-2 whitespace-nowrap flex-shrink-0 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black">
               <Wrench className="w-4 h-4" />
-              New Request
+              <span className="hidden sm:inline">New Request</span>
+              <span className="sm:hidden">Request</span>
             </Button>
-            <Button onClick={() => navigate("/dashboard/my-lease")} variant="outline" className="gap-2">
+            <Button onClick={() => navigate("/dashboard/my-lease")} variant="outline" className="gap-2 whitespace-nowrap flex-shrink-0 border-brand-yellow/20 text-white hover:bg-brand-yellow/10">
               <FileText className="w-4 h-4" />
-              View Lease
+              <span className="hidden sm:inline">View Lease</span>
+              <span className="sm:hidden">Lease</span>
             </Button>
-            <Button onClick={() => navigate("/dashboard/messages")} variant="outline" className="gap-2">
+            <Button onClick={() => navigate("/dashboard/messages")} variant="outline" className="gap-2 whitespace-nowrap flex-shrink-0 border-brand-yellow/20 text-white hover:bg-brand-yellow/10">
               <MessageSquare className="w-4 h-4" />
-              Messages
+              <span className="hidden sm:inline">Messages</span>
+              <span className="sm:hidden">Chat</span>
             </Button>
           </div>
         </div>
 
         {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {/* Top Stats Row */}
           <MyLeaseWidget />
           <RentDueWidget />
           <MyMaintenanceRequestsWidget />
           
           {/* Documents and Messages */}
-          <div className="lg:col-span-2 row-span-2">
+          <div className="lg:col-span-2">
             <LeaseDocumentsWidget />
           </div>
-          <div className="lg:col-span-1 row-span-2">
+          <div className="lg:col-span-1">
             <TenantMessagesWidget />
           </div>
         </div>
