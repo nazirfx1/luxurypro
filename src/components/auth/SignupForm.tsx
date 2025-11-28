@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -28,6 +29,8 @@ export const SignupForm = () => {
   const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [emailCheckTimer, setEmailCheckTimer] = useState<NodeJS.Timeout | null>(null);
 
   const {
     register,
@@ -38,9 +41,80 @@ export const SignupForm = () => {
     watch,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
+    mode: 'onChange',
   });
 
   const selectedRole = watch("role");
+  const emailValue = watch("email");
+  const passwordValue = watch("password");
+  const confirmPasswordValue = watch("confirmPassword");
+  const fullNameValue = watch("fullName");
+
+  // Real-time email validation and availability check
+  useEffect(() => {
+    // Clear previous timer
+    if (emailCheckTimer) {
+      clearTimeout(emailCheckTimer);
+    }
+
+    // Reset status if email is empty
+    if (!emailValue || emailValue.trim() === '') {
+      setEmailStatus('idle');
+      return;
+    }
+
+    // Check email format first using HTML5 validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValidFormat = emailRegex.test(emailValue);
+
+    if (!isValidFormat) {
+      setEmailStatus('invalid');
+      return;
+    }
+
+    // Email format is valid, now check availability after debounce
+    setEmailStatus('checking');
+    
+    const timer = setTimeout(async () => {
+      try {
+        // Check if email exists in profiles table
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('email', emailValue.toLowerCase())
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.error('Error checking email:', error);
+          setEmailStatus('idle');
+          return;
+        }
+
+        if (data) {
+          setEmailStatus('taken');
+        } else {
+          setEmailStatus('available');
+        }
+      } catch (error) {
+        console.error('Error checking email availability:', error);
+        setEmailStatus('idle');
+      }
+    }, 450); // 450ms debounce
+
+    setEmailCheckTimer(timer);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [emailValue]);
+
+  // Check if form is valid for submission
+  const isFormValid = 
+    emailStatus === 'available' &&
+    selectedRole &&
+    fullNameValue?.length >= 2 &&
+    passwordValue?.length >= 8 &&
+    passwordValue === confirmPasswordValue;
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
@@ -79,14 +153,61 @@ export const SignupForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="name@company.com"
-          {...register("email")}
-          className="transition-smooth bg-background border-border text-foreground"
-        />
-        {errors.email && (
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@company.com"
+            {...register("email")}
+            className={`transition-smooth pr-10 ${
+              emailStatus === 'available' ? 'border-primary' :
+              emailStatus === 'taken' || emailStatus === 'invalid' ? 'border-destructive' :
+              'border-border'
+            }`}
+            aria-describedby="email-status"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {emailStatus === 'checking' && (
+              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+            )}
+            {emailStatus === 'available' && (
+              <CheckCircle className="w-4 h-4 text-primary" />
+            )}
+            {(emailStatus === 'taken' || emailStatus === 'invalid') && (
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            )}
+          </div>
+        </div>
+        
+        {/* Email status messages */}
+        <div id="email-status" className="min-h-[20px]">
+          {emailStatus === 'invalid' && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
+              Please enter a valid email address.
+            </p>
+          )}
+          {emailStatus === 'taken' && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
+              This email is already registered.
+            </p>
+          )}
+          {emailStatus === 'available' && (
+            <p className="text-sm text-primary flex items-center gap-1">
+              <CheckCircle className="w-3 h-3" />
+              Email available.
+            </p>
+          )}
+          {emailStatus === 'checking' && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Checking availability...
+            </p>
+          )}
+        </div>
+        
+        {errors.email && emailStatus !== 'invalid' && emailStatus !== 'taken' && (
           <p className="text-sm text-destructive">{errors.email.message}</p>
         )}
       </div>
@@ -168,9 +289,10 @@ export const SignupForm = () => {
 
       <Button
         type="submit"
-        className="w-full bg-primary text-primary-foreground hover:bg-primary-hover shadow-yellow hover:shadow-yellow-lg transition-smooth"
+        className="w-full bg-primary text-primary-foreground hover:bg-primary-hover shadow-yellow hover:shadow-yellow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
         size="lg"
-        disabled={isLoading}
+        disabled={isLoading || !isFormValid}
+        aria-label="Create account"
       >
         {isLoading ? (
           <>
