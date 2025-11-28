@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Building2, DollarSign, Bed, Bath, TrendingUp } from "lucide-react";
+import { Plus, Search, Building2, DollarSign, Bed, Bath, TrendingUp, Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { ExportMenu } from "@/components/shared/ExportMenu";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+
+type UserRole = "super_admin" | "admin" | "manager" | "sales_agent" | "property_owner" | "tenant" | "support_staff" | "accountant";
 
 const statusColors = {
   draft: "bg-gray-500",
@@ -29,6 +32,7 @@ const statusColors = {
 
 const PropertiesList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,8 +40,10 @@ const PropertiesList = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState("created_at");
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
+    loadUserRole();
     loadProperties();
 
     // Realtime subscription for properties
@@ -54,6 +60,25 @@ const PropertiesList = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const loadUserRole = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .order("assigned_at", { ascending: true })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error("Error loading user role:", error);
+      return;
+    }
+
+    setUserRole(data?.role as UserRole);
+  };
 
   const loadProperties = async () => {
     try {
@@ -113,19 +138,70 @@ const PropertiesList = () => {
     return sortedMedia[0]?.media_url;
   };
 
+  // Role-based permission checks
+  const canCreateProperty = () => {
+    return ["super_admin", "admin", "manager", "property_owner"].includes(userRole || "");
+  };
+
+  const canEditProperty = (property: any) => {
+    if (["super_admin", "admin"].includes(userRole || "")) return true;
+    if (userRole === "manager") return true;
+    if (userRole === "property_owner") {
+      return property.owner_id === user?.id || property.created_by === user?.id;
+    }
+    return false;
+  };
+
+  const canDeleteProperty = (property: any) => {
+    if (userRole === "super_admin") return true;
+    if (userRole === "admin" && property.created_by !== user?.id) return false;
+    if (userRole === "property_owner") {
+      return property.owner_id === user?.id || property.created_by === user?.id;
+    }
+    return false;
+  };
+
+  const canViewFinancials = () => {
+    return ["super_admin", "admin", "manager", "accountant", "property_owner"].includes(userRole || "");
+  };
+
+  const getPageTitle = () => {
+    switch (userRole) {
+      case "sales_agent": return "Available Properties";
+      case "property_owner": return "My Properties";
+      case "tenant": return "My Property";
+      case "support_staff": return "Properties with Maintenance";
+      case "accountant": return "Properties Financial Overview";
+      default: return "Properties";
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (userRole) {
+      case "sales_agent": return "Browse available properties for your clients";
+      case "property_owner": return "Manage your property portfolio";
+      case "tenant": return "View your leased property details";
+      case "support_staff": return "Properties requiring your maintenance attention";
+      case "accountant": return "Financial metrics and reports for properties";
+      default: return "Manage your property portfolio";
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Properties</h1>
-            <p className="text-muted-foreground mt-1">Manage your property portfolio</p>
+            <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
+            <p className="text-muted-foreground mt-1">{getPageDescription()}</p>
           </div>
-          <Button onClick={() => navigate("/dashboard/properties/new")} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Property
-          </Button>
+          {canCreateProperty() && (
+            <Button onClick={() => navigate("/dashboard/properties/new")} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Property
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -175,19 +251,21 @@ const PropertiesList = () => {
                 <SelectItem value="title">Title</SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              className="gap-2"
-            >
-              <TrendingUp className="w-4 h-4" />
-              Analytics
-            </Button>
+            {canViewFinancials() && (
+              <Button
+                variant="outline"
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="gap-2"
+              >
+                <TrendingUp className="w-4 h-4" />
+                Analytics
+              </Button>
+            )}
           </div>
         </Card>
 
         {/* Analytics Dashboard */}
-        {showAnalytics && (
+        {showAnalytics && canViewFinancials() && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Properties</h3>
@@ -229,9 +307,11 @@ const PropertiesList = () => {
         )}
 
         {/* Export Section */}
-        <div className="flex justify-end">
-          <ExportMenu data={filteredProperties} filename="properties" />
-        </div>
+        {["super_admin", "admin", "manager", "accountant"].includes(userRole || "") && (
+          <div className="flex justify-end">
+            <ExportMenu data={filteredProperties} filename="properties" />
+          </div>
+        )}
 
         {/* Properties Grid */}
         {loading ? (
@@ -259,11 +339,13 @@ const PropertiesList = () => {
             {filteredProperties.map((property) => (
               <Card
                 key={property.id}
-                className="overflow-hidden hover:shadow-elegant transition-all cursor-pointer group"
-                onClick={() => navigate(`/dashboard/properties/${property.id}`)}
+                className="overflow-hidden hover:shadow-elegant transition-all group"
               >
                 {/* Image */}
-                <div className="relative h-48 bg-muted overflow-hidden">
+                <div 
+                  className="relative h-48 bg-muted overflow-hidden cursor-pointer"
+                  onClick={() => navigate(`/dashboard/properties/${property.id}`)}
+                >
                   {getFirstImage(property.property_media) ? (
                     <img
                       src={getFirstImage(property.property_media)}
@@ -291,12 +373,14 @@ const PropertiesList = () => {
                     <p className="text-sm text-muted-foreground line-clamp-1">{property.address}</p>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-                      <DollarSign className="w-5 h-5" />
-                      {formatPrice(property.price)}
+                  {(userRole !== "support_staff" && userRole !== "tenant") && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-2xl font-bold text-primary">
+                        <DollarSign className="w-5 h-5" />
+                        {formatPrice(property.price)}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     {property.bedrooms && (
@@ -320,6 +404,59 @@ const PropertiesList = () => {
                     <p className="text-xs text-muted-foreground capitalize">
                       {property.property_type} • {property.listing_type}
                     </p>
+                  </div>
+
+                  {/* Role-based action buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 gap-2"
+                      onClick={() => navigate(`/dashboard/properties/${property.id}`)}
+                    >
+                      <Eye className="w-4 h-4" />
+                      View
+                    </Button>
+                    
+                    {canEditProperty(property) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/dashboard/properties/edit/${property.id}`);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                    )}
+                    
+                    {canDeleteProperty(property) && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (confirm("Are you sure you want to delete this property?")) {
+                            const { error } = await supabase
+                              .from("properties")
+                              .delete()
+                              .eq("id", property.id);
+                            
+                            if (error) {
+                              toast.error("Failed to delete property");
+                            } else {
+                              toast.success("Property deleted successfully");
+                              loadProperties();
+                            }
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
