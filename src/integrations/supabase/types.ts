@@ -159,6 +159,80 @@ export type Database = {
           },
         ]
       }
+      chat_conversations: {
+        Row: {
+          created_at: string | null
+          feedback: string | null
+          id: string
+          language: string | null
+          last_message_at: string | null
+          resolved: boolean | null
+          satisfaction_rating: number | null
+          session_id: string
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          language?: string | null
+          last_message_at?: string | null
+          resolved?: boolean | null
+          satisfaction_rating?: number | null
+          session_id: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          language?: string | null
+          last_message_at?: string | null
+          resolved?: boolean | null
+          satisfaction_rating?: number | null
+          session_id?: string
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           country: string

@@ -28,6 +28,7 @@ import CapRateCalculator from "./pages/financials/CapRateCalculator";
 import NotFound from "./pages/NotFound";
 import SetupAdminModern from "./pages/admin/SetupAdminModern";
 import Analytics from "./pages/admin/Analytics";
+import ChatAnalytics from "./pages/admin/ChatAnalytics";
 import Settings from "./pages/admin/Settings";
 import ClientsList from "./pages/clients/ClientsList";
 import LeasesList from "./pages/leases/LeasesList";
@@ -267,6 +268,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Analytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/chat-analytics"
+              element={
+                <ProtectedRoute>
+                  <ChatAnalytics />
                 </ProtectedRoute>
               }
             />

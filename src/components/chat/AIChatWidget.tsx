@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
+  id: string;
   role: 'user' | 'assistant';
   content: string;
+  timestamp: Date;
 }
 
 export const AIChatWidget = () => {
@@ -15,12 +18,15 @@ export const AIChatWidget = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: '1',
       role: 'assistant',
-      content: 'Hello! I can help you in English or Somali. How can I assist you today?\n\nNabad! Waxaan kaa caawin karaa Ingiriisiga ama Soomaliga. Sidee kugu caawin karaa maanta?'
+      content: 'Hello! I can help you in English or Somali. How can I assist you today?\n\nNabad! Waxaan kaa caawin karaa Ingiriisiga ama Soomaliga. Sidee kugu caawin karaa maanta?',
+      timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random()}`);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -31,11 +37,19 @@ export const AIChatWidget = () => {
   }, [messages]);
 
   const streamChat = async (userMessage: string) => {
-    const newMessages = [...messages, { role: 'user' as const, content: userMessage }];
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date()
+    };
+    const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
@@ -43,7 +57,9 @@ export const AIChatWidget = () => {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+          sessionId,
+          userId: user?.id,
         }),
       });
 
@@ -77,7 +93,12 @@ export const AIChatWidget = () => {
             const parsed = JSON.parse(data);
             if (parsed.content) {
               assistantMessage += parsed.content;
-              setMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
+              setMessages([...newMessages, { 
+                id: 'assistant-' + Date.now(), 
+                role: 'assistant', 
+                content: assistantMessage,
+                timestamp: new Date()
+              }]);
             }
           } catch (e) {
             // Ignore parse errors for incomplete JSON
@@ -89,8 +110,10 @@ export const AIChatWidget = () => {
     } catch (error) {
       console.error('Chat error:', error);
       setMessages([...newMessages, { 
+        id: 'error-' + Date.now(),
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.\n\nWaan ka xumahay, cilad ayaa dhacday. Fadlan mar kale isku day.' 
+        content: 'Sorry, I encountered an error. Please try again.\n\nWaan ka xumahay, cilad ayaa dhacday. Fadlan mar kale isku day.',
+        timestamp: new Date()
       }]);
       setIsLoading(false);
     }
