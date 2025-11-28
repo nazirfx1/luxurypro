@@ -125,32 +125,63 @@ export const DashboardSidebar = () => {
   const items = userRole ? menuItems[userRole as keyof typeof menuItems] || menuItems.tenant : menuItems.tenant;
 
   return (
-    <Sidebar className={isCollapsed ? "w-14" : "w-60"}>
-      <div className="p-4 border-b border-border">
-        {!isCollapsed && <img src={logo} alt="Luxury Pro" className="h-10 w-auto" />}
-        {isCollapsed && <img src={logo} alt="Luxury Pro" className="h-8 w-auto" />}
+    <Sidebar className={`${isCollapsed ? "w-16" : "w-64"} bg-sidebar-bg border-r border-sidebar-bg transition-all duration-300`}>
+      {/* Logo Section */}
+      <div className={`${isCollapsed ? "p-3" : "p-6"} border-b border-sidebar-bg/50 flex items-center justify-center transition-all duration-300`}>
+        {!isCollapsed && (
+          <img src={logo} alt="Luxury Pro" className="h-12 w-auto filter brightness-0 invert" />
+        )}
+        {isCollapsed && (
+          <img src={logo} alt="Luxury Pro" className="h-8 w-auto filter brightness-0 invert" />
+        )}
       </div>
 
-      <SidebarContent>
-        <SidebarGroup>
-          {!isCollapsed && <SidebarGroupLabel>Navigation</SidebarGroupLabel>}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-muted/50 transition-colors"
-                      activeClassName="bg-primary/10 text-primary font-medium border-l-2 border-primary"
-                    >
-                      <item.icon className={`${isCollapsed ? "" : "mr-2"} h-4 w-4`} />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+      <SidebarContent className="bg-sidebar-bg">
+        <SidebarGroup className="px-0">
+          {!isCollapsed && (
+            <SidebarGroupLabel className="px-6 py-3 text-sidebar-text/60 text-xs font-semibold uppercase tracking-wider">
+              Navigation
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent className="mt-2">
+            <SidebarMenu className="space-y-1 px-3">
+              {items.map((item) => {
+                const isActive = currentPath === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        end
+                        className={`
+                          group relative flex items-center gap-3 rounded-lg px-3 py-3
+                          text-sidebar-text font-medium text-[15px]
+                          transition-all duration-200 ease-in-out
+                          hover:bg-sidebar-hover hover:text-sidebar-active-text hover:shadow-lg
+                          ${isCollapsed ? "justify-center" : ""}
+                          ${isActive 
+                            ? "bg-sidebar-active-bg text-sidebar-active-text shadow-[0_0_20px_rgba(201,164,0,0.3)] border-l-4 border-sidebar-border" 
+                            : "hover:translate-x-1"
+                          }
+                        `}
+                        activeClassName=""
+                      >
+                        <item.icon 
+                          className={`
+                            ${isCollapsed ? "h-5 w-5" : "h-5 w-5"} 
+                            flex-shrink-0
+                            ${isActive ? "drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" : ""}
+                          `} 
+                          strokeWidth={1.5}
+                        />
+                        {!isCollapsed && (
+                          <span className="truncate">{item.title}</span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
