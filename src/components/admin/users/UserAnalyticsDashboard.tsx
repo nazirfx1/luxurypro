@@ -26,7 +26,7 @@ export const UserAnalyticsDashboard = () => {
 
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("*, user_roles(role)")
+        .select("*, user_roles!user_roles_user_id_fkey(role)")
         .is("deleted_at", null);
 
       if (profilesError) throw profilesError;
