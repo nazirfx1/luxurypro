@@ -21,6 +21,7 @@ import ClientsList from "./pages/clients/ClientsList";
 import LeasesList from "./pages/leases/LeasesList";
 import UserManagement from "./pages/admin/UserManagement";
 import PermissionManagement from "./pages/admin/PermissionManagement";
+import RoleWorkflows from "./pages/admin/RoleWorkflows";
 import MyLease from "./pages/leases/MyLease";
 import MaintenanceRequests from "./pages/maintenance/MaintenanceRequests";
 import NewMaintenanceRequest from "./pages/maintenance/NewMaintenanceRequest";
@@ -140,6 +141,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PermissionManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/role-workflows"
+              element={
+                <ProtectedRoute>
+                  <RoleWorkflows />
                 </ProtectedRoute>
               }
             />
