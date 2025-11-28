@@ -27,6 +27,7 @@ import {
   Settings,
   UserCog,
   Shield,
+  BookOpen,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -36,6 +37,7 @@ const menuItems = {
     { title: "Properties", url: "/dashboard/properties", icon: Building2 },
     { title: "Users", url: "/dashboard/users", icon: Users },
     { title: "Permissions", url: "/dashboard/permissions", icon: Shield },
+    { title: "Role Workflows", url: "/dashboard/role-workflows", icon: BookOpen },
     { title: "Clients", url: "/dashboard/clients", icon: UserCog },
     { title: "Leases", url: "/dashboard/leases", icon: FileText },
     { title: "Maintenance", url: "/dashboard/maintenance", icon: Wrench },
@@ -49,6 +51,7 @@ const menuItems = {
     { title: "Properties", url: "/dashboard/properties", icon: Building2 },
     { title: "Users", url: "/dashboard/users", icon: Users },
     { title: "Permissions", url: "/dashboard/permissions", icon: Shield },
+    { title: "Role Workflows", url: "/dashboard/role-workflows", icon: BookOpen },
     { title: "Clients", url: "/dashboard/clients", icon: UserCog },
     { title: "Leases", url: "/dashboard/leases", icon: FileText },
     { title: "Maintenance", url: "/dashboard/maintenance", icon: Wrench },
