@@ -34,7 +34,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, sessionId, userId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -92,6 +92,47 @@ serve(async (req) => {
         }
       }
     ];
+
+    console.log('Processing chat request with', messages.length, 'messages');
+
+    // Store or update conversation
+    const { data: existingConv } = await supabase
+      .from('chat_conversations')
+      .select('id')
+      .eq('session_id', sessionId)
+      .maybeSingle();
+
+    let conversationId = existingConv?.id;
+
+    if (!conversationId) {
+      const { data: newConv } = await supabase
+        .from('chat_conversations')
+        .insert({
+          session_id: sessionId,
+          user_id: userId || null,
+          language: messages[0]?.content?.toLowerCase().includes('somali') ? 'so' : 'en',
+        })
+        .select('id')
+        .single();
+      conversationId = newConv?.id;
+    } else {
+      await supabase
+        .from('chat_conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', conversationId);
+    }
+
+    // Store user message
+    const userMessage = messages[messages.length - 1];
+    await supabase
+      .from('chat_messages')
+      .insert({
+        conversation_id: conversationId,
+        role: userMessage.role,
+        content: userMessage.content,
+      });
+
+    let assistantResponse = '';
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -168,7 +209,9 @@ serve(async (req) => {
                 }
 
                 if (choice?.delta?.content) {
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: choice.delta.content })}\n\n`));
+                  const content = choice.delta.content;
+                  assistantResponse += content;
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
                 }
 
                 if (choice?.finish_reason === "tool_calls" && toolCalls.length > 0) {
@@ -274,6 +317,17 @@ serve(async (req) => {
 
           controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
           controller.close();
+
+          // Store assistant response
+          if (assistantResponse && conversationId) {
+            await supabase
+              .from('chat_messages')
+              .insert({
+                conversation_id: conversationId,
+                role: 'assistant',
+                content: assistantResponse,
+              });
+          }
         } catch (error) {
           console.error("Stream error:", error);
           controller.error(error);
