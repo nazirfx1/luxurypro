@@ -1,256 +1,246 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Loader2, Home, Wrench, MessageSquare, FileText, DollarSign, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { Settings, Grip, Save, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
+import { Responsive, WidthProvider, Layout } from "react-grid-layout";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+// Widget imports
+import { PropertyStatsWidget } from "@/components/dashboard/widgets/PropertyStatsWidget";
+import { RevenueWidget } from "@/components/dashboard/widgets/RevenueWidget";
+import { UsersWidget } from "@/components/dashboard/widgets/UsersWidget";
+import { LeasesWidget } from "@/components/dashboard/widgets/LeasesWidget";
+import { MaintenanceWidget } from "@/components/dashboard/widgets/MaintenanceWidget";
+import { RecentActivityWidget } from "@/components/dashboard/widgets/RecentActivityWidget";
+import { ChartWidget } from "@/components/dashboard/widgets/ChartWidget";
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+interface WidgetConfig {
+  id: string;
+  name: string;
+  component: React.ComponentType;
+  minW?: number;
+  minH?: number;
+}
+
+const AVAILABLE_WIDGETS: WidgetConfig[] = [
+  { id: "properties", name: "Properties", component: PropertyStatsWidget, minW: 2, minH: 2 },
+  { id: "revenue", name: "Revenue", component: RevenueWidget, minW: 2, minH: 2 },
+  { id: "users", name: "Users", component: UsersWidget, minW: 2, minH: 2 },
+  { id: "leases", name: "Leases", component: LeasesWidget, minW: 2, minH: 2 },
+  { id: "maintenance", name: "Maintenance", component: MaintenanceWidget, minW: 2, minH: 2 },
+  { id: "activity", name: "Recent Activity", component: RecentActivityWidget, minW: 3, minH: 4 },
+  { id: "chart", name: "Financial Chart", component: ChartWidget, minW: 4, minH: 3 },
+];
+
+const DEFAULT_LAYOUT: Layout[] = [
+  { i: "properties", x: 0, y: 0, w: 3, h: 2 },
+  { i: "revenue", x: 3, y: 0, w: 3, h: 2 },
+  { i: "users", x: 6, y: 0, w: 3, h: 2 },
+  { i: "leases", x: 9, y: 0, w: 3, h: 2 },
+  { i: "maintenance", x: 0, y: 2, w: 3, h: 2 },
+  { i: "chart", x: 3, y: 2, w: 6, h: 3 },
+  { i: "activity", x: 9, y: 2, w: 3, h: 4 },
+];
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
-  const [userRoles, setUserRoles] = useState<any[]>([]);
-  const [stats, setStats] = useState({
-    properties: 0,
-    leases: 0,
-    maintenance: 0,
-    messages: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const [layout, setLayout] = useState<Layout[]>([]);
+  const [activeWidgets, setActiveWidgets] = useState<string[]>([]);
+  const [editMode, setEditMode] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Load saved layout from localStorage
   useEffect(() => {
-    if (user) {
-      loadUserData();
-      loadStats();
-      
-      // Real-time subscriptions for dashboard updates
-      const channels = [
-        supabase.channel('dashboard-properties').on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => loadStats()),
-        supabase.channel('dashboard-leases').on('postgres_changes', { event: '*', schema: 'public', table: 'leases' }, () => loadStats()),
-        supabase.channel('dashboard-maintenance').on('postgres_changes', { event: '*', schema: 'public', table: 'maintenance_requests' }, () => loadStats()),
-        supabase.channel('dashboard-messages').on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => loadStats()),
-      ];
-      
-      channels.forEach(channel => channel.subscribe());
-      
-      return () => {
-        channels.forEach(channel => supabase.removeChannel(channel));
-      };
+    const savedLayout = localStorage.getItem("dashboard-layout");
+    const savedWidgets = localStorage.getItem("dashboard-widgets");
+
+    if (savedLayout) {
+      setLayout(JSON.parse(savedLayout));
+    } else {
+      setLayout(DEFAULT_LAYOUT);
     }
-  }, [user]);
 
-  const loadUserData = async () => {
-    try {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user?.id)
-        .single();
+    if (savedWidgets) {
+      setActiveWidgets(JSON.parse(savedWidgets));
+    } else {
+      setActiveWidgets(AVAILABLE_WIDGETS.map((w) => w.id));
+    }
+  }, []);
 
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user?.id);
-
-      setProfile(profileData);
-      setUserRoles(rolesData || []);
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    } finally {
-      setLoading(false);
+  const handleLayoutChange = (newLayout: Layout[]) => {
+    if (editMode) {
+      setLayout(newLayout);
     }
   };
 
-  const loadStats = async () => {
-    try {
-      const [propertiesRes, leasesRes, maintenanceRes, messagesRes] = await Promise.all([
-        supabase.from("properties").select("id", { count: 'exact', head: true }),
-        supabase.from("leases").select("id", { count: 'exact', head: true }).eq("tenant_id", user?.id),
-        supabase.from("maintenance_requests").select("id", { count: 'exact', head: true }).eq("tenant_id", user?.id),
-        supabase.from("messages").select("id", { count: 'exact', head: true }).eq("recipient_id", user?.id).eq("read", false),
-      ]);
-
-      setStats({
-        properties: propertiesRes.count || 0,
-        leases: leasesRes.count || 0,
-        maintenance: maintenanceRes.count || 0,
-        messages: messagesRes.count || 0,
-      });
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
+  const handleSaveLayout = () => {
+    localStorage.setItem("dashboard-layout", JSON.stringify(layout));
+    localStorage.setItem("dashboard-widgets", JSON.stringify(activeWidgets));
+    setEditMode(false);
+    toast.success("Dashboard layout saved");
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const handleResetLayout = () => {
+    setLayout(DEFAULT_LAYOUT);
+    setActiveWidgets(AVAILABLE_WIDGETS.map((w) => w.id));
+    localStorage.removeItem("dashboard-layout");
+    localStorage.removeItem("dashboard-widgets");
+    toast.success("Dashboard layout reset to default");
+  };
 
-  // Mock data for charts
-  const activityData = [
-    { name: 'Mon', requests: 4, messages: 7 },
-    { name: 'Tue', requests: 3, messages: 5 },
-    { name: 'Wed', requests: 6, messages: 8 },
-    { name: 'Thu', requests: 2, messages: 4 },
-    { name: 'Fri', requests: 5, messages: 9 },
-    { name: 'Sat', requests: 1, messages: 3 },
-    { name: 'Sun', requests: 2, messages: 2 },
-  ];
+  const toggleWidget = (widgetId: string) => {
+    setActiveWidgets((prev) => {
+      if (prev.includes(widgetId)) {
+        return prev.filter((id) => id !== widgetId);
+      } else {
+        return [...prev, widgetId];
+      }
+    });
+  };
 
-  const maintenanceData = [
-    { name: 'Pending', value: 3, color: '#fbbf24' },
-    { name: 'In Progress', value: 2, color: '#3b82f6' },
-    { name: 'Completed', value: 8, color: '#10b981' },
-  ];
-
-  const quickActions = [
-    { icon: Wrench, label: "New Maintenance", action: () => navigate("/dashboard/maintenance/new"), color: "text-orange-500" },
-    { icon: FileText, label: "View Lease", action: () => navigate("/dashboard/lease"), color: "text-blue-500" },
-    { icon: MessageSquare, label: "Messages", action: () => navigate("/dashboard/messages"), color: "text-purple-500" },
-    { icon: Home, label: "Properties", action: () => navigate("/dashboard/properties"), color: "text-green-500" },
-  ];
+  const activeWidgetConfigs = AVAILABLE_WIDGETS.filter((w) =>
+    activeWidgets.includes(w.id)
+  );
 
   return (
     <DashboardLayout>
-      <PageHeader 
-        title={`Welcome back, ${profile?.full_name || 'User'}`}
-        description="Your real-time analytics and system overview"
-      />
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Properties</p>
-              <p className="text-3xl font-bold mt-1">{stats.properties}</p>
-            </div>
-            <Home className="w-10 h-10 text-primary opacity-20" />
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome back! Here's your overview
+            </p>
           </div>
-        </Card>
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Active Leases</p>
-              <p className="text-3xl font-bold mt-1">{stats.leases}</p>
-            </div>
-            <FileText className="w-10 h-10 text-blue-500 opacity-20" />
+          <div className="flex gap-2">
+            {editMode ? (
+              <>
+                <Button variant="outline" onClick={() => setEditMode(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveLayout} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save Layout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setSettingsOpen(true)}
+                  className="gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Widgets
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleResetLayout}
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Reset
+                </Button>
+                <Button onClick={() => setEditMode(true)} className="gap-2">
+                  <Grip className="w-4 h-4" />
+                  Customize
+                </Button>
+              </>
+            )}
           </div>
-        </Card>
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Maintenance Requests</p>
-              <p className="text-3xl font-bold mt-1">{stats.maintenance}</p>
-            </div>
-            <Wrench className="w-10 h-10 text-orange-500 opacity-20" />
-          </div>
-        </Card>
-        <Card className="p-6 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Unread Messages</p>
-              <p className="text-3xl font-bold mt-1">{stats.messages}</p>
-            </div>
-            <MessageSquare className="w-10 h-10 text-purple-500 opacity-20" />
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card className="p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {quickActions.map((action, idx) => (
-            <Button
-              key={idx}
-              variant="outline"
-              className="h-24 flex-col gap-2"
-              onClick={action.action}
-            >
-              <action.icon className={`w-6 h-6 ${action.color}`} />
-              <span className="text-sm">{action.label}</span>
-            </Button>
-          ))}
         </div>
-      </Card>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Weekly Activity</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={activityData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="requests" stroke="#f97316" strokeWidth={2} />
-              <Line type="monotone" dataKey="messages" stroke="#8b5cf6" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+        {/* Edit Mode Banner */}
+        {editMode && (
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Grip className="w-5 h-5 text-primary" />
+              <p className="font-medium">
+                Drag & drop widgets to customize your dashboard
+              </p>
+            </div>
+          </div>
+        )}
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Maintenance Status</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={maintenanceData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(entry) => entry.name}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
+        {/* Dashboard Grid */}
+        <ResponsiveGridLayout
+          className="layout"
+          layouts={{ lg: layout }}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+          rowHeight={80}
+          onLayoutChange={handleLayoutChange}
+          isDraggable={editMode}
+          isResizable={editMode}
+          compactType="vertical"
+          preventCollision={false}
+        >
+          {activeWidgetConfigs.map((widget) => {
+            const WidgetComponent = widget.component;
+            return (
+              <div
+                key={widget.id}
+                className={editMode ? "cursor-move" : ""}
+                data-grid={{
+                  minW: widget.minW || 2,
+                  minH: widget.minH || 2,
+                }}
               >
-                {maintenanceData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
+                <WidgetComponent />
+              </div>
+            );
+          })}
+        </ResponsiveGridLayout>
 
-      {/* Recent Activity Timeline */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="w-2 h-2 bg-green-500 rounded-full mt-2" />
-            <div>
-              <p className="font-medium">Maintenance request completed</p>
-              <p className="text-sm text-muted-foreground">Kitchen faucet repair - 2 hours ago</p>
+        {/* Widget Settings Dialog */}
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Manage Widgets</DialogTitle>
+              <DialogDescription>
+                Select which widgets to display on your dashboard
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {AVAILABLE_WIDGETS.map((widget) => (
+                <div key={widget.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={widget.id}
+                    checked={activeWidgets.includes(widget.id)}
+                    onCheckedChange={() => toggleWidget(widget.id)}
+                  />
+                  <Label
+                    htmlFor={widget.id}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {widget.name}
+                  </Label>
+                </div>
+              ))}
             </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
-            <div>
-              <p className="font-medium">New message received</p>
-              <p className="text-sm text-muted-foreground">From Property Manager - 5 hours ago</p>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSettingsOpen(false)}>
+                Close
+              </Button>
             </div>
-          </div>
-          <div className="flex items-start gap-4">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2" />
-            <div>
-              <p className="font-medium">Rent payment due</p>
-              <p className="text-sm text-muted-foreground">Due in 5 days - $2,500</p>
-            </div>
-          </div>
-        </div>
-      </Card>
+          </DialogContent>
+        </Dialog>
+      </div>
     </DashboardLayout>
   );
 };
