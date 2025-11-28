@@ -160,6 +160,10 @@ const Dashboard = () => {
     activeWidgets.includes(w.id)
   );
 
+  // Only render grid when layout is properly initialized
+  const canRenderGrid = !isLoading && layout.length > 0 && 
+    layout.every(item => item.i && typeof item.x === 'number');
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -222,7 +226,7 @@ const Dashboard = () => {
         )}
 
         {/* Dashboard Grid */}
-        {isLoading ? (
+        {!canRenderGrid ? (
           <div className="flex items-center justify-center h-96">
             <div className="text-muted-foreground">Loading dashboard...</div>
           </div>
