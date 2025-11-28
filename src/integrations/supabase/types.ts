@@ -870,6 +870,35 @@ export type Database = {
           },
         ]
       }
+      property_favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_media: {
         Row: {
           created_at: string | null
@@ -898,6 +927,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_media_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_visits: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          message: string | null
+          property_id: string
+          status: string | null
+          visit_date: string
+          visit_time: string
+          visitor_email: string
+          visitor_name: string
+          visitor_phone: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          message?: string | null
+          property_id: string
+          status?: string | null
+          visit_date: string
+          visit_time: string
+          visitor_email: string
+          visitor_name: string
+          visitor_phone: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          message?: string | null
+          property_id?: string
+          status?: string | null
+          visit_date?: string
+          visit_time?: string
+          visitor_email?: string
+          visitor_name?: string
+          visitor_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_visits_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"

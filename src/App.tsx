@@ -20,6 +20,8 @@ import PropertiesList from "./pages/properties/PropertiesList";
 import PropertiesListPublic from "./pages/properties/PropertiesListPublic";
 import PropertyForm from "./pages/properties/PropertyForm";
 import PropertyDetail from "./pages/properties/PropertyDetail";
+import PropertyDetailPublic from "./pages/properties/PropertyDetailPublic";
+import Favorites from "./pages/properties/Favorites";
 import FinancialDashboard from "./pages/financials/FinancialDashboard";
 import CapRateCalculator from "./pages/financials/CapRateCalculator";
 import NotFound from "./pages/NotFound";
@@ -48,6 +50,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/properties" element={<PropertiesListPublic />} />
+            <Route path="/properties/:id" element={<PropertyDetailPublic />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/dashboard"
@@ -150,6 +153,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PropertyForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/favorites"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
                 </ProtectedRoute>
               }
             />
