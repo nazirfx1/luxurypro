@@ -33,7 +33,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Search, Plus, Edit, Trash2, Phone, Mail } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Phone, Mail, Filter, TrendingUp } from "lucide-react";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 type Client = {
   id: string;
@@ -54,6 +56,8 @@ const ClientsList = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [formData, setFormData] = useState({
@@ -115,7 +119,22 @@ const ClientsList = () => {
       client.email?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || client.status === statusFilter;
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "budget") return (b.budget || 0) - (a.budget || 0);
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
   });
+
+  // Analytics
+  const statusDistribution = ["new", "contacted", "qualified", "converted"].map((status) => ({
+    name: status,
+    value: clients.filter((c) => c.status === status).length,
+  })).filter((s) => s.value > 0);
+
+  const totalBudget = clients.reduce((sum, c) => sum + (c.budget || 0), 0);
+  const avgBudget = clients.length > 0 ? totalBudget / clients.length : 0;
+
+  const CHART_COLORS = ["hsl(var(--primary))", "#10b981", "#f59e0b", "#8b5cf6"];
 
   const handleSave = async () => {
     try {
@@ -209,8 +228,8 @@ const ClientsList = () => {
 
         {/* Search and Filters */}
         <Card className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="relative flex-1 min-w-[250px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search clients..."
@@ -231,12 +250,73 @@ const ClientsList = () => {
                 <SelectItem value="converted">Converted</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Latest</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+                <SelectItem value="budget">Budget</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </Button>
+            <ExportMenu data={filteredClients} filename="clients" />
             <Button onClick={openNewDialog} className="gap-2">
               <Plus className="w-4 h-4" />
               Add Client
             </Button>
           </div>
         </Card>
+
+        {/* Analytics Dashboard */}
+        {showAnalytics && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Clients</h3>
+              <p className="text-3xl font-bold text-primary">{clients.length}</p>
+              <p className="text-sm text-muted-foreground mt-1">Active in database</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Budget Pool</h3>
+              <p className="text-3xl font-bold text-green-600">${totalBudget.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Combined client budgets</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Average Budget</h3>
+              <p className="text-3xl font-bold text-blue-600">${Math.round(avgBudget).toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Per client</p>
+            </Card>
+            <Card className="p-6 md:col-span-3">
+              <h3 className="text-lg font-semibold mb-4">Client Status Distribution</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={statusDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {statusDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+        )}
 
         {/* Clients Table */}
         <Card>

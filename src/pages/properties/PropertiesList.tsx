@@ -13,8 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Building2, DollarSign, Bed, Bath } from "lucide-react";
+import { Plus, Search, Building2, DollarSign, Bed, Bath, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const statusColors = {
   draft: "bg-gray-500",
@@ -32,6 +34,8 @@ const PropertiesList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     loadProperties();
@@ -79,7 +83,21 @@ const PropertiesList = () => {
     const matchesStatus = statusFilter === "all" || property.status === statusFilter;
     const matchesType = typeFilter === "all" || property.property_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
+  }).sort((a, b) => {
+    if (sortBy === "price") return b.price - a.price;
+    if (sortBy === "title") return a.title.localeCompare(b.title);
+    return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
   });
+
+  // Analytics
+  const totalValue = properties.reduce((sum, p) => sum + p.price, 0);
+  const avgPrice = properties.length > 0 ? totalValue / properties.length : 0;
+  const statusDist = ["draft", "active", "under_offer", "sold", "leased"].map((status) => ({
+    name: status.replace("_", " "),
+    value: properties.filter((p) => p.status === status).length,
+  })).filter((s) => s.value > 0);
+
+  const CHART_COLORS = ["#6b7280", "hsl(var(--primary))", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -112,7 +130,7 @@ const PropertiesList = () => {
 
         {/* Filters */}
         <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -147,8 +165,73 @@ const PropertiesList = () => {
                 <SelectItem value="land">Land</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Latest</SelectItem>
+                <SelectItem value="price">Price</SelectItem>
+                <SelectItem value="title">Title</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </Button>
           </div>
         </Card>
+
+        {/* Analytics Dashboard */}
+        {showAnalytics && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Properties</h3>
+              <p className="text-3xl font-bold text-primary">{properties.length}</p>
+              <p className="text-sm text-muted-foreground mt-1">In portfolio</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Portfolio Value</h3>
+              <p className="text-3xl font-bold text-green-600">${(totalValue / 1000000).toFixed(2)}M</p>
+              <p className="text-sm text-muted-foreground mt-1">Total market value</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Average Price</h3>
+              <p className="text-3xl font-bold text-blue-600">${(avgPrice / 1000).toFixed(0)}K</p>
+              <p className="text-sm text-muted-foreground mt-1">Per property</p>
+            </Card>
+            <Card className="p-6 md:col-span-3">
+              <h3 className="text-lg font-semibold mb-4">Property Status Distribution</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={statusDist}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {statusDist.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+        )}
+
+        {/* Export Section */}
+        <div className="flex justify-end">
+          <ExportMenu data={filteredProperties} filename="properties" />
+        </div>
 
         {/* Properties Grid */}
         {loading ? (

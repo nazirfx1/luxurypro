@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Search } from "lucide-react";
+import { Send, Search, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { Card as ChartCard } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Message {
   id: string;
@@ -38,6 +41,7 @@ const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -130,6 +134,15 @@ const Messages = () => {
   const conversationList = Object.entries(conversations);
   const currentConversation = selectedConversation ? conversations[selectedConversation] : null;
 
+  // Analytics
+  const totalUnread = conversationList.reduce((sum, [, conv]) => sum + conv.unreadCount, 0);
+  const dailyMessages = messages.reduce((acc: any, msg) => {
+    const day = format(new Date(msg.created_at), "MMM dd");
+    acc[day] = (acc[day] || 0) + 1;
+    return acc;
+  }, {});
+  const messageChartData = Object.entries(dailyMessages).slice(-7).map(([day, count]) => ({ day, count }));
+
   return (
     <DashboardLayout>
       <PageHeader 
@@ -139,7 +152,52 @@ const Messages = () => {
           { label: "Dashboard", href: "/dashboard" },
           { label: "Messages" }
         ]}
+        actions={
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </Button>
+            <ExportMenu data={messages} filename="messages" />
+          </div>
+        }
       />
+
+      {/* Analytics */}
+      {showAnalytics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <ChartCard className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Messages</h3>
+            <p className="text-3xl font-bold text-primary">{messages.length}</p>
+            <p className="text-sm text-muted-foreground mt-1">All conversations</p>
+          </ChartCard>
+          <ChartCard className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Unread Messages</h3>
+            <p className="text-3xl font-bold text-orange-600">{totalUnread}</p>
+            <p className="text-sm text-muted-foreground mt-1">Needs attention</p>
+          </ChartCard>
+          <ChartCard className="p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Active Conversations</h3>
+            <p className="text-3xl font-bold text-blue-600">{conversationList.length}</p>
+            <p className="text-sm text-muted-foreground mt-1">Open threads</p>
+          </ChartCard>
+          <ChartCard className="p-6 md:col-span-3">
+            <h3 className="text-lg font-semibold mb-4">Message Activity (Last 7 Days)</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={messageChartData}>
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="hsl(var(--primary))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
 
       <Card className="flex h-[calc(100vh-250px)]">
         {/* Conversations List */}

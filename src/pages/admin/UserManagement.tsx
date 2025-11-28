@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,8 +32,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Search, UserPlus, Edit, Trash2, Shield } from "lucide-react";
+import { Search, UserPlus, Edit, Trash2, Shield, Filter, BarChart3 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 type Profile = {
   id: string;
@@ -72,6 +75,8 @@ export default function UserManagement() {
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRoles | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -158,12 +163,22 @@ export default function UserManagement() {
     };
   }, []);
 
-  // Filter users based on search
-  const filteredUsers = users.filter(
-    (u) =>
+  // Filter users based on search and role
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
       u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === "all" || u.roles.includes(roleFilter as AppRole);
+    return matchesSearch && matchesRole;
+  });
+
+  // Analytics data
+  const roleDistribution = AVAILABLE_ROLES.map((role) => ({
+    name: role.replace("_", " "),
+    value: users.filter((u) => u.roles.includes(role)).length,
+  })).filter((r) => r.value > 0);
+
+  const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
 
   // Open edit dialog
   const handleEditUser = (user: UserWithRoles) => {
@@ -271,18 +286,87 @@ export default function UserManagement() {
           ]}
         />
 
-      {/* Search and Actions */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users by name or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+      {/* Search, Filters and Actions */}
+      <Card className="p-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="relative flex-1 min-w-[250px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Roles</SelectItem>
+              {AVAILABLE_ROLES.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {role.replace("_", " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            className="gap-2"
+          >
+            <BarChart3 className="w-4 h-4" />
+            {showAnalytics ? "Hide" : "Show"} Analytics
+          </Button>
+          <ExportMenu data={filteredUsers} filename="users" />
         </div>
-      </div>
+      </Card>
+
+      {/* Analytics Section */}
+      {showAnalytics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Role Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={roleDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={100}
+                  dataKey="value"
+                >
+                  {roleDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">User Statistics</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Total Users</span>
+                <span className="text-2xl font-bold text-primary">{users.length}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Active Filters</span>
+                <span className="text-2xl font-bold text-primary">{filteredUsers.length}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">Unique Roles</span>
+                <span className="text-2xl font-bold text-primary">{roleDistribution.length}</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Users Table */}
       <div className="border rounded-lg bg-card">
