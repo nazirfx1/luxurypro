@@ -17,6 +17,7 @@ import TenantDashboard from "./pages/dashboards/TenantDashboard";
 import SupportStaffDashboard from "./pages/dashboards/SupportStaffDashboard";
 import AccountantDashboard from "./pages/dashboards/AccountantDashboard";
 import PropertiesList from "./pages/properties/PropertiesList";
+import PropertiesListPublic from "./pages/properties/PropertiesListPublic";
 import PropertyForm from "./pages/properties/PropertyForm";
 import PropertyDetail from "./pages/properties/PropertyDetail";
 import FinancialDashboard from "./pages/financials/FinancialDashboard";
@@ -46,6 +47,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/properties" element={<PropertiesListPublic />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/dashboard"
