@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Building2, Users, Shield } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
@@ -28,106 +29,106 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left side - Branding Panel */}
-      <div className="relative lg:w-1/2 bg-background overflow-hidden auth-slide-left">
-        {/* Gradient background */}
-        <div className="absolute inset-0 gradient-hero opacity-80" />
+      {/* Left Panel - Branding */}
+      <div className="lg:w-1/2 bg-gradient-to-br from-black via-black to-black/95 p-8 lg:p-16 flex flex-col justify-center relative overflow-hidden">
+        {/* Decorative gradient orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/3 rounded-full blur-3xl"></div>
         
-        {/* Geometric shapes */}
-        <div className="absolute top-20 left-20 w-64 h-64 border border-primary/20 rounded-full animate-pulse delay-300" />
-        <div className="absolute bottom-32 right-20 w-48 h-48 border border-primary/10 rounded-full animate-pulse delay-500" />
-        
-        <div className="relative z-10 flex flex-col items-center justify-center h-full p-8 lg:p-12 min-h-[300px] lg:min-h-screen">
-          {/* Logo with glow effect */}
-          <div className="mb-12 transform transition-all duration-300 hover:scale-105 hover-glow">
+        <div className="relative z-10 max-w-lg">
+          {/* Logo */}
+          <div className="mb-12 group">
             <img 
               src={logo} 
-              alt="Luxury Properties" 
-              className="h-20 lg:h-24 w-auto brightness-0 invert drop-shadow-[0_0_20px_rgba(197,157,0,0.3)]" 
+              alt="Luxury Pro" 
+              className="h-12 w-auto filter brightness-0 invert animate-fade-in-up animate-float transition-all duration-700 hover:scale-110 hover:brightness-110"
+              style={{ 
+                filter: 'brightness(0) invert(1) drop-shadow(0 0 20px rgba(197, 154, 0, 0.3))',
+              }}
             />
           </div>
+
+          {/* Heading */}
+          <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 animate-slide-in-left group-hover:scale-105 transition-all duration-500 bg-gradient-to-r from-primary via-white to-secondary bg-clip-text hover:text-transparent">
+            Welcome to Luxury Pro
+          </h1>
           
-          <div className="text-center space-y-6 max-w-md">
-            <h1 className="text-3xl lg:text-5xl font-bold text-foreground animate-fade-in">
-              Welcome to Luxury Pro
-            </h1>
-            <p className="text-base lg:text-lg text-muted-foreground animate-fade-in delay-200">
-              Enterprise-grade real estate management platform trusted by industry leaders worldwide.
-            </p>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-8 pt-8 animate-fade-in delay-300">
-              <div className="space-y-2 group cursor-default">
-                <div className="text-3xl lg:text-4xl font-bold text-primary transition-all duration-300 group-hover:scale-110">
-                  10K+
-                </div>
-                <div className="text-xs lg:text-sm text-muted-foreground">
-                  Properties Managed
-                </div>
+          <p className="text-xl text-white/80 mb-12 animate-slide-in-right delay-300 transition-all duration-300 hover:opacity-100 hover:translate-x-2">
+            The future of real estate management
+          </p>
+
+          {/* Feature highlights */}
+          <div className="space-y-6">
+            <div className="flex items-start gap-4 animate-fade-in group transition-all duration-500 hover:scale-105 hover:translate-x-2 cursor-pointer glass-card p-4 rounded-xl hover:shadow-glow">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110 neon-glow">
+                <Building2 className="w-6 h-6 text-primary transition-all duration-500 group-hover:rotate-180" />
               </div>
-              <div className="space-y-2 group cursor-default">
-                <div className="text-3xl lg:text-4xl font-bold text-primary transition-all duration-300 group-hover:scale-110">
-                  $2.5B+
-                </div>
-                <div className="text-xs lg:text-sm text-muted-foreground">
-                  Portfolio Value
-                </div>
+              <div>
+                <h3 className="text-white font-semibold mb-1 transition-all duration-300 group-hover:text-primary group-hover:translate-x-1">Smart Property Management</h3>
+                <p className="text-white/60 text-sm transition-all duration-300 group-hover:translate-y-1">Manage all your properties from one powerful dashboard</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 animate-fade-in delay-200 group transition-all duration-500 hover:scale-105 hover:translate-x-2 cursor-pointer glass-card p-4 rounded-xl hover:shadow-glow">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110 neon-glow">
+                <Users className="w-6 h-6 text-primary transition-all duration-500 group-hover:rotate-180 group-hover:animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-1 transition-all duration-300 group-hover:text-primary group-hover:translate-x-1">Tenant Portal</h3>
+                <p className="text-white/60 text-sm transition-all duration-300 group-hover:translate-y-1">Seamless communication and payment processing</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 animate-fade-in delay-500 group transition-all duration-500 hover:scale-105 hover:translate-x-2 cursor-pointer glass-card p-4 rounded-xl hover:shadow-glow">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-500 group-hover:rotate-45 group-hover:scale-110 neon-glow">
+                <Shield className="w-6 h-6 text-primary transition-all duration-500 group-hover:rotate-180 group-hover:animate-spin" style={{ animationDuration: '3s' }} />
+              </div>
+              <div>
+                <h3 className="text-white font-semibold mb-1 transition-all duration-300 group-hover:text-primary group-hover:translate-x-1">Enterprise Security</h3>
+                <p className="text-white/60 text-sm transition-all duration-300 group-hover:translate-y-1">Bank-level encryption and data protection</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right side - Auth Forms */}
-      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 bg-background auth-slide-right">
-        <div className="w-full max-w-md space-y-8">
-          {/* Mobile logo (only shown on small screens) */}
-          <div className="lg:hidden flex justify-center mb-6">
-            <img src={logo} alt="Luxury Properties" className="h-14 w-auto" />
-          </div>
+      {/* Right Panel - Auth Forms */}
+      <div className="lg:w-1/2 bg-black p-8 lg:p-16 flex items-center justify-center relative overflow-hidden">
+        {/* Floating orbs with animations */}
+        <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float animate-glow-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 bg-primary/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-primary/5 rounded-full blur-lg animate-glow-pulse" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-card rounded-2xl p-8 shadow-elegant transform-gpu">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center animate-fade-in-up group-hover:scale-105 transition-all duration-500 bg-gradient-to-r from-primary via-white to-primary bg-clip-text hover:text-transparent">
+              {showForgotPassword ? "Reset Password" : "Get Started"}
+            </h2>
 
-          {/* Auth card */}
-          <div className="glass-effect rounded-2xl p-6 lg:p-8 shadow-elegant animate-fade-in delay-200">
             {showForgotPassword ? (
               <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
             ) : (
-              <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
+              <Tabs defaultValue="login" className="w-full animate-scale-in">
+                <TabsList className="grid w-full grid-cols-2 mb-8 glass-card transition-all duration-300 hover:border-primary/50">
                   <TabsTrigger 
-                    value="login"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+                    value="login" 
+                    className="transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
                   >
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger 
-                    value="signup"
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+                    value="signup" 
+                    className="transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
                   >
                     Sign Up
                   </TabsTrigger>
                 </TabsList>
-                
-                <TabsContent value="login" className="space-y-6 animate-fade-in">
-                  <div className="space-y-2 text-center">
-                    <h2 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                      Sign in to your account
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Enter your credentials to access your dashboard
-                    </p>
-                  </div>
+
+                <TabsContent value="login" className="animate-fade-in">
                   <LoginForm onForgotPassword={() => setShowForgotPassword(true)} />
                 </TabsContent>
 
-                <TabsContent value="signup" className="space-y-6 animate-fade-in">
-                  <div className="space-y-2 text-center">
-                    <h2 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                      Create an account
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Get started with Luxury Pro today
-                    </p>
-                  </div>
+                <TabsContent value="signup" className="animate-fade-in">
                   <SignupForm />
                 </TabsContent>
               </Tabs>
@@ -135,7 +136,7 @@ const Auth = () => {
           </div>
 
           {/* Terms & Privacy */}
-          <div className="text-center text-xs lg:text-sm text-muted-foreground animate-fade-in delay-400">
+          <div className="text-center text-xs lg:text-sm text-white/60 mt-6 animate-fade-in delay-400">
             <p>
               By continuing, you agree to our{" "}
               <a 

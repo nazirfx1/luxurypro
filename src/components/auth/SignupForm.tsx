@@ -220,13 +220,13 @@ export const SignupForm = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Full Name Field with Floating Label */}
-      <div className="relative">
+      <div className="relative animate-slide-in-left transform-gpu">
         <Input
           id="fullName"
           type="text"
           placeholder=" "
           {...register("fullName")}
-          className="peer h-12 pt-4 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="peer h-12 pt-4 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
         />
         <Label 
           htmlFor="fullName"
@@ -240,13 +240,13 @@ export const SignupForm = () => {
       </div>
 
       {/* Email Field with Floating Label & Status */}
-      <div className="relative">
+      <div className="relative animate-slide-in-left delay-100 transform-gpu">
         <Input
           id="email"
           type="email"
           placeholder=" "
           {...register("email")}
-          className={`peer h-12 pt-4 transition-all duration-200 ${
+          className={`peer h-12 pt-4 glass-card transition-all duration-500 hover:scale-[1.02] ${
             emailStatus.status === 'valid' 
               ? 'border-primary focus:border-primary' 
               : emailStatus.status === 'taken'
@@ -287,14 +287,14 @@ export const SignupForm = () => {
       </div>
 
       {/* Password Field with Floating Label & Strength Meter */}
-      <div className="relative space-y-3">
+      <div className="relative space-y-3 animate-slide-in-left delay-200 transform-gpu">
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder=" "
             {...register("password")}
-            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="peer h-12 pt-4 pr-12 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
           />
           <Label 
             htmlFor="password"
@@ -374,14 +374,14 @@ export const SignupForm = () => {
       </div>
 
       {/* Confirm Password Field with Floating Label */}
-      <div className="relative">
+      <div className="relative animate-slide-in-left delay-300 transform-gpu">
         <div className="relative">
           <Input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             placeholder=" "
             {...register("confirmPassword")}
-            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="peer h-12 pt-4 pr-12 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
           />
           <Label 
             htmlFor="confirmPassword"
@@ -432,7 +432,7 @@ export const SignupForm = () => {
       {/* Submit Button */}
       <Button
         type="submit"
-        className={`w-full h-12 shadow-yellow-lg hover:shadow-yellow transition-all duration-300 active:scale-95 font-semibold text-base ${
+        className={`w-full h-12 bg-gradient-to-r from-primary to-primary-glow shadow-yellow-lg hover:shadow-yellow transition-all duration-500 hover:scale-105 active:scale-95 font-semibold text-base neon-glow transform-gpu ${
           !isFormValid || isLoading ? 'opacity-50' : ''
         }`}
         size="lg"

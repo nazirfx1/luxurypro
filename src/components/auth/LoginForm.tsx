@@ -49,13 +49,13 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Email Field with Floating Label */}
-      <div className="relative">
+      <div className="relative animate-slide-in-left transform-gpu">
         <Input
           id="email"
           type="email"
           placeholder=" "
           {...register("email")}
-          className="peer h-12 pt-4 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="peer h-12 pt-4 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
         />
         <Label 
           htmlFor="email"
@@ -69,14 +69,14 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
       </div>
 
       {/* Password Field with Floating Label */}
-      <div className="relative">
+      <div className="relative animate-slide-in-left delay-100 transform-gpu">
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder=" "
             {...register("password")}
-            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="peer h-12 pt-4 pr-12 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
           />
           <Label 
             htmlFor="password"
@@ -118,7 +118,7 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full h-12 shadow-yellow-lg hover:shadow-yellow transition-all duration-300 active:scale-95 font-semibold text-base"
+        className="w-full h-12 bg-gradient-to-r from-primary to-primary-glow shadow-yellow-lg hover:shadow-yellow transition-all duration-500 hover:scale-105 active:scale-95 font-semibold text-base neon-glow animate-slide-in-left delay-200 transform-gpu"
         size="lg"
         disabled={isLoading}
       >
