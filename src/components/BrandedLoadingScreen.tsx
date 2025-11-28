@@ -3,9 +3,10 @@ import logo from "@/assets/logo.png";
 
 interface BrandedLoadingScreenProps {
   isLoading: boolean;
+  progress: number;
 }
 
-const BrandedLoadingScreen = ({ isLoading }: BrandedLoadingScreenProps) => {
+const BrandedLoadingScreen = ({ isLoading, progress }: BrandedLoadingScreenProps) => {
   if (!isLoading) return null;
 
   return (
@@ -93,9 +94,47 @@ const BrandedLoadingScreen = ({ isLoading }: BrandedLoadingScreenProps) => {
           ))}
         </div>
 
+        {/* Progress bar */}
+        <div className="w-64 mt-4">
+          <div className="relative h-1.5 bg-brand-yellow/20 rounded-full overflow-hidden">
+            <motion.div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-brand-yellow via-brand-yellow to-yellow-400 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: `${progress}%` }}
+              transition={{
+                duration: 0.3,
+                ease: "easeOut",
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                animate={{
+                  x: ["-100%", "200%"],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              />
+            </motion.div>
+          </div>
+          
+          {/* Progress percentage */}
+          <motion.p
+            className="text-brand-yellow/70 text-xs text-center mt-2 font-medium"
+            key={progress}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {Math.round(progress)}%
+          </motion.p>
+        </div>
+
         {/* Loading text */}
         <motion.p
-          className="text-brand-yellow font-medium text-sm tracking-wider"
+          className="text-brand-yellow font-medium text-sm tracking-wider mt-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{
