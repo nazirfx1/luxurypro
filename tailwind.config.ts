@@ -57,6 +57,14 @@ export default {
           DEFAULT: "hsl(var(--black))",
           light: "hsl(var(--black-light))",
         },
+        sidebar: {
+          bg: "hsl(var(--sidebar-bg))",
+          text: "hsl(var(--sidebar-text))",
+          hover: "hsl(var(--sidebar-hover))",
+          "active-bg": "hsl(var(--sidebar-active-bg))",
+          "active-text": "hsl(var(--sidebar-active-text))",
+          border: "hsl(var(--sidebar-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

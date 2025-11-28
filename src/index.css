@@ -49,6 +49,14 @@ All colors MUST be HSL.
     --gold-dark: 43 64% 43%;
     --black: 0 0% 4%;
     --black-light: 0 0% 15%;
+    
+    /* Dashboard sidebar colors */
+    --sidebar-bg: 0 0% 0%;
+    --sidebar-text: 0 0% 100%;
+    --sidebar-hover: 48 100% 39%;
+    --sidebar-active-bg: 48 100% 39%;
+    --sidebar-active-text: 0 0% 100%;
+    --sidebar-border: 48 100% 39%;
 
     /* Gradients */
     --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
