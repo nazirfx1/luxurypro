@@ -1,7 +1,16 @@
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Star, Quote } from "lucide-react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const testimonials = [
   {
@@ -25,70 +34,85 @@ const testimonials = [
     rating: 5,
     content: "The booking process was incredibly smooth and the property details were comprehensive. I felt confident throughout my purchase journey.",
   },
-  {
-    name: "David Thompson",
-    role: "Property Developer",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    rating: 5,
-    content: "The best real estate platform I've used. Great property listings, excellent customer service, and a user-friendly interface.",
-  },
 ];
 
 const Testimonials = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 md:py-32 bg-muted/30">
+    <section className="py-20 md:py-32 bg-muted/30" ref={ref}>
       <div className="container px-4">
-        <div className="text-center mb-12 md:mb-16 space-y-4">
+        <motion.div 
+          className="text-center mb-16 space-y-4"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-3xl md:text-5xl font-bold text-foreground">
             What Our <span className="text-primary">Clients Say</span>
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Don't just take our word for it - hear from our satisfied clients
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Real experiences from satisfied property seekers and homeowners
           </p>
-        </div>
+        </motion.div>
 
-        <Carousel className="w-full max-w-6xl mx-auto">
-          <CarouselContent>
-            {testimonials.map((testimonial, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <Card className="p-6 bg-card border-border h-full hover-lift">
-                  <div className="flex flex-col h-full space-y-4">
-                    {/* Quote Icon */}
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Quote className="w-6 h-6 text-primary" />
-                    </div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <Carousel className="max-w-5xl mx-auto">
+            <CarouselContent>
+              {testimonials.map((testimonial, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <motion.div
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className="h-full border-border hover:border-primary/50 transition-all duration-300 hover:shadow-elegant hover:shadow-primary/10 group">
+                      <CardContent className="p-6 flex flex-col h-full space-y-4">
+                        {/* Quote Icon */}
+                        <motion.div
+                          whileHover={{ rotate: 180, scale: 1.2 }}
+                          transition={{ duration: 0.4 }}
+                        >
+                          <Quote className="w-10 h-10 text-primary/20 group-hover:text-primary/40 transition-colors" />
+                        </motion.div>
 
-                    {/* Rating */}
-                    <div className="flex gap-1">
-                      {Array.from({ length: testimonial.rating }).map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-primary text-primary" />
-                      ))}
-                    </div>
+                        {/* Rating */}
+                        <div className="flex gap-1">
+                          {Array.from({ length: testimonial.rating }).map((_, i) => (
+                            <Star key={i} className="w-5 h-5 fill-primary text-primary" />
+                          ))}
+                        </div>
 
-                    {/* Content */}
-                    <p className="text-muted-foreground leading-relaxed flex-grow">
-                      "{testimonial.content}"
-                    </p>
+                        {/* Content */}
+                        <p className="text-muted-foreground leading-relaxed flex-grow">
+                          "{testimonial.content}"
+                        </p>
 
-                    {/* Author */}
-                    <div className="flex items-center gap-4 pt-4 border-t border-border">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                        <AvatarFallback>{testimonial.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold text-foreground">{testimonial.name}</div>
-                        <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
-        </Carousel>
+                        {/* Author */}
+                        <div className="flex items-center gap-4 pt-4 border-t border-border">
+                          <Avatar className="w-12 h-12">
+                            <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                            <AvatarFallback>{testimonial.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-semibold text-foreground">{testimonial.name}</div>
+                            <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </motion.div>
       </div>
     </section>
   );

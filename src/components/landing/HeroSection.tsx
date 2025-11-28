@@ -1,11 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Home, DollarSign } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Search, MapPin, Home, DollarSign, ChevronDown } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
   const [cities, setCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
   const [filteredCities, setFilteredCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
@@ -15,8 +24,25 @@ const HeroSection = () => {
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const orb1X = useTransform(mouseX, [0, window.innerWidth], [-20, 20]);
+  const orb1Y = useTransform(mouseY, [0, window.innerHeight], [-20, 20]);
+  const orb2X = useTransform(mouseX, [0, window.innerWidth], [20, -20]);
+  const orb2Y = useTransform(mouseY, [0, window.innerHeight], [20, -20]);
+
   useEffect(() => {
-    // Fetch unique property types from database
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [mouseX, mouseY]);
+
+  useEffect(() => {
     const fetchPropertyTypes = async () => {
       const { data } = await supabase
         .from('properties')
@@ -29,7 +55,6 @@ const HeroSection = () => {
       }
     };
 
-    // Fetch cities
     const fetchCities = async () => {
       const { data } = await supabase
         .from('cities')
@@ -44,7 +69,6 @@ const HeroSection = () => {
     fetchPropertyTypes();
     fetchCities();
 
-    // Subscribe to realtime updates
     const propertiesChannel = supabase
       .channel('properties-changes')
       .on('postgres_changes', 
@@ -85,34 +109,98 @@ const HeroSection = () => {
     }
   }, [location, cities]);
 
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (location) params.set('location', location);
+    if (propertyType && propertyType !== 'all') params.set('type', propertyType);
+    if (priceRange && priceRange !== 'all') params.set('price', priceRange);
+    navigate(`/properties?${params.toString()}`);
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-brand-black">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-hero opacity-60" />
-      
-      {/* Floating particles effect */}
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-muted/20 pt-20">
+      {/* Animated Background Elements with Parallax */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700" />
+        <motion.div 
+          className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"
+          style={{ x: orb1X, y: orb1Y }}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+          style={{ x: orb2X, y: orb2Y }}
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
       </div>
 
-      <div className="container relative z-10 px-4 py-32">
-        <div className="flex flex-col items-center text-center space-y-10 max-w-6xl mx-auto">
-
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight animate-fade-in-up delay-100">
+      <div className="container relative z-10 px-4 py-16">
+        <div className="max-w-5xl mx-auto text-center space-y-8">
+          {/* Main Heading */}
+          <motion.h1 
+            className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
             Find Your Perfect
-            <span className="block mt-2 text-primary">Luxury Property</span>
-          </h1>
+            <motion.span 
+              className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent mt-2"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Dream Property
+            </motion.span>
+          </motion.h1>
 
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl animate-fade-in-up delay-200">
-            Discover exceptional properties across prime locations. Your dream home is just a search away.
-          </p>
+          {/* Subheading */}
+          <motion.p 
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            Discover exclusive properties tailored to your lifestyle. 
+            From luxury estates to urban apartments, find your next home with ease.
+          </motion.p>
 
-          {/* Advanced Search Bar */}
-          <div className="w-full max-w-5xl glass-effect rounded-2xl p-4 md:p-6 animate-fade-in-up delay-300">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search Bar */}
+          <motion.div 
+            className="max-w-4xl mx-auto bg-card border border-border rounded-2xl p-6 shadow-xl backdrop-blur-sm"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="relative flex items-center gap-3 px-4 py-3 bg-muted/50 rounded-xl">
                 <MapPin className="w-5 h-5 text-primary" />
                 <Input 
@@ -180,57 +268,70 @@ const HeroSection = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <Button 
-                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-smooth h-full"
-                onClick={() => {
-                  const params = new URLSearchParams();
-                  if (location) params.set('location', location);
-                  if (propertyType && propertyType !== 'all') params.set('type', propertyType);
-                  if (priceRange && priceRange !== 'all') params.set('price', priceRange);
-                  window.location.href = `/properties?${params.toString()}`;
-                }}
+                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50"
+                size="lg"
+                onClick={handleSearch}
               >
                 <Search className="w-5 h-5 mr-2" />
                 Search Properties
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-6 animate-fade-in-up delay-400">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow hover:shadow-yellow-lg transition-smooth px-8"
-              onClick={() => window.location.href = '/properties'}
-            >
-              Browse Properties
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-smooth px-8"
-              onClick={() => window.location.href = '/auth'}
-            >
-              Book a Visit
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="border-foreground/20 text-foreground hover:bg-muted transition-smooth px-8"
-              onClick={() => window.location.href = '/auth'}
-            >
-              Create Account
-            </Button>
-          </div>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50"
+                onClick={() => navigate('/properties')}
+              >
+                Browse Properties
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-border hover:bg-muted hover:border-primary/50 transition-all duration-300"
+                onClick={() => navigate('/auth')}
+              >
+                Book a Visit
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                size="lg" 
+                variant="ghost"
+                className="hover:text-primary transition-all duration-300"
+                onClick={() => navigate('/auth')}
+              >
+                Create Account
+              </Button>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-        </div>
+        {/* Scroll Indicator */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronDown className="w-8 h-8 text-primary" />
+        </motion.div>
       </div>
     </section>
   );

@@ -1,11 +1,18 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Bed, Bath, Maximize, TrendingUp, Star } from "lucide-react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Bed, Bath, Square, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const featuredProperties = [
   {
-    id: 1,
     title: "Modern Penthouse Suite",
     location: "Manhattan, New York",
     price: "$4,500,000",
@@ -14,10 +21,8 @@ const featuredProperties = [
     baths: 3,
     sqft: 3200,
     tag: "New Listing",
-    tagColor: "bg-primary"
   },
   {
-    id: 2,
     title: "Luxury Waterfront Villa",
     location: "Miami Beach, Florida",
     price: "$7,200,000",
@@ -26,10 +31,8 @@ const featuredProperties = [
     baths: 4,
     sqft: 5500,
     tag: "Hot Deal",
-    tagColor: "bg-destructive"
   },
   {
-    id: 3,
     title: "Contemporary Loft",
     location: "Los Angeles, California",
     price: "$2,800,000",
@@ -38,85 +41,96 @@ const featuredProperties = [
     baths: 2,
     sqft: 2400,
     tag: "Luxury",
-    tagColor: "bg-primary"
-  },
-  {
-    id: 4,
-    title: "Urban Skyline Residence",
-    location: "Chicago, Illinois",
-    price: "$3,100,000",
-    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80&w=800",
-    beds: 3,
-    baths: 3,
-    sqft: 2800,
-    tag: "Vacant Now",
-    tagColor: "bg-accent"
   },
 ];
 
 const PropertyHighlights = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-20 md:py-32 bg-background">
+    <section className="py-20 md:py-32 bg-background" ref={ref}>
       <div className="container px-4">
-        <div className="text-center mb-12 md:mb-16 space-y-4">
+        <motion.div 
+          className="text-center mb-16 space-y-4"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6 }}
+        >
           <h2 className="text-3xl md:text-5xl font-bold text-foreground">
             Featured <span className="text-primary">Properties</span>
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Handpicked luxury properties in prime locations
           </p>
-        </div>
+        </motion.div>
 
         {/* Desktop Grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProperties.map((property) => (
-            <Card 
-              key={property.id} 
-              className="group overflow-hidden bg-card border-border hover-lift cursor-pointer"
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {featuredProperties.map((property, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <div className="relative overflow-hidden">
-                <img 
-                  src={property.image} 
-                  alt={property.title}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <Badge className={`absolute top-4 right-4 ${property.tagColor} text-white border-none`}>
-                  {property.tag}
-                </Badge>
-              </div>
-              
-              <div className="p-5 space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {property.title}
-                  </h3>
-                  <div className="flex items-center gap-1 mt-2 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{property.location}</span>
-                  </div>
+              <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10">
+                <div className="relative overflow-hidden aspect-[4/3]">
+                  <motion.img 
+                    src={property.image} 
+                    alt={property.title}
+                    className="w-full h-full object-cover"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                  />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <motion.span 
+                    className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {property.tag}
+                  </motion.span>
                 </div>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {property.title}
+                      </h3>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-sm">{property.location}</span>
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Bed className="w-4 h-4" />
-                    <span>{property.beds}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Bath className="w-4 h-4" />
-                    <span>{property.baths}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Maximize className="w-4 h-4" />
-                    <span>{property.sqft} sqft</span>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Bed className="w-4 h-4" />
+                        <span>{property.beds}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Bath className="w-4 h-4" />
+                        <span>{property.baths}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Square className="w-4 h-4" />
+                        <span>{property.sqft} sqft</span>
+                      </div>
+                    </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <span className="text-2xl font-bold text-primary">{property.price}</span>
-                  <Star className="w-5 h-5 text-primary fill-primary" />
-                </div>
-              </div>
-            </Card>
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <span className="text-2xl font-bold text-primary">{property.price}</span>
+                      <Star className="w-5 h-5 text-primary fill-primary" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
 
@@ -124,57 +138,58 @@ const PropertyHighlights = () => {
         <div className="md:hidden">
           <Carousel className="w-full">
             <CarouselContent>
-              {featuredProperties.map((property) => (
-                <CarouselItem key={property.id}>
-                  <Card className="overflow-hidden bg-card border-border">
-                    <div className="relative overflow-hidden">
+              {featuredProperties.map((property, index) => (
+                <CarouselItem key={index}>
+                  <Card className="overflow-hidden border-border">
+                    <div className="relative overflow-hidden aspect-[4/3]">
                       <img 
                         src={property.image} 
                         alt={property.title}
-                        className="w-full h-64 object-cover"
+                        className="w-full h-full object-cover"
                       />
-                      <Badge className={`absolute top-4 right-4 ${property.tagColor} text-white border-none`}>
+                      <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                         {property.tag}
-                      </Badge>
+                      </span>
                     </div>
-                    
-                    <div className="p-5 space-y-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">
-                          {property.title}
-                        </h3>
-                        <div className="flex items-center gap-1 mt-2 text-muted-foreground">
-                          <MapPin className="w-4 h-4" />
-                          <span className="text-sm">{property.location}</span>
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-foreground mb-2">
+                            {property.title}
+                          </h3>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            <span className="text-sm">{property.location}</span>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Bed className="w-4 h-4" />
-                          <span>{property.beds}</span>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Bed className="w-4 h-4" />
+                            <span>{property.beds}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Bath className="w-4 h-4" />
+                            <span>{property.baths}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Square className="w-4 h-4" />
+                            <span>{property.sqft} sqft</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Bath className="w-4 h-4" />
-                          <span>{property.baths}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Maximize className="w-4 h-4" />
-                          <span>{property.sqft} sqft</span>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <span className="text-2xl font-bold text-primary">{property.price}</span>
-                        <Star className="w-5 h-5 text-primary fill-primary" />
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <span className="text-2xl font-bold text-primary">{property.price}</span>
+                          <Star className="w-5 h-5 text-primary fill-primary" />
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
                   </Card>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
+            <CarouselPrevious />
+            <CarouselNext />
           </Carousel>
         </div>
       </div>
