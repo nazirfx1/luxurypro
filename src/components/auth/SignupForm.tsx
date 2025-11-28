@@ -8,7 +8,61 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle, Shield, ShieldCheck, ShieldAlert } from "lucide-react";
+
+// Password strength calculation
+const calculatePasswordStrength = (password: string): {
+  strength: 'weak' | 'medium' | 'strong';
+  score: number;
+  feedback: string[];
+} => {
+  if (!password) {
+    return { strength: 'weak', score: 0, feedback: [] };
+  }
+
+  let score = 0;
+  const feedback: string[] = [];
+
+  // Length check
+  if (password.length >= 8) score += 25;
+  if (password.length >= 12) score += 10;
+  if (password.length >= 16) score += 10;
+
+  // Character variety checks
+  if (/[a-z]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add lowercase letters');
+  }
+
+  if (/[A-Z]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add uppercase letters');
+  }
+
+  if (/[0-9]/.test(password)) {
+    score += 15;
+  } else {
+    feedback.push('Add numbers');
+  }
+
+  if (/[^A-Za-z0-9]/.test(password)) {
+    score += 20;
+  } else {
+    feedback.push('Add special characters (!@#$%^&*)');
+  }
+
+  // Determine strength
+  let strength: 'weak' | 'medium' | 'strong' = 'weak';
+  if (score >= 80) {
+    strength = 'strong';
+  } else if (score >= 50) {
+    strength = 'medium';
+  }
+
+  return { strength, score, feedback };
+};
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -35,6 +89,11 @@ export const SignupForm = () => {
     status: 'idle' | 'checking' | 'valid' | 'taken' | 'invalid';
     message?: string;
   }>({ status: 'idle' });
+  const [passwordStrength, setPasswordStrength] = useState<{
+    strength: 'weak' | 'medium' | 'strong';
+    score: number;
+    feedback: string[];
+  }>({ strength: 'weak', score: 0, feedback: [] });
 
   const {
     register,
@@ -53,6 +112,16 @@ export const SignupForm = () => {
   const passwordValue = watch("password");
   const confirmPasswordValue = watch("confirmPassword");
   const fullNameValue = watch("fullName");
+
+  // Real-time password strength calculation
+  useEffect(() => {
+    if (passwordValue) {
+      const result = calculatePasswordStrength(passwordValue);
+      setPasswordStrength(result);
+    } else {
+      setPasswordStrength({ strength: 'weak', score: 0, feedback: [] });
+    }
+  }, [passwordValue]);
 
   // Real-time email validation and availability check
   useEffect(() => {
@@ -217,8 +286,8 @@ export const SignupForm = () => {
         )}
       </div>
 
-      {/* Password Field with Floating Label */}
-      <div className="relative">
+      {/* Password Field with Floating Label & Strength Meter */}
+      <div className="relative space-y-3">
         <div className="relative">
           <Input
             id="password"
@@ -241,8 +310,66 @@ export const SignupForm = () => {
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
+
+        {/* Password Strength Meter */}
+        {passwordValue && (
+          <div className="space-y-2 animate-fade-in">
+            {/* Strength Bar */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-500 ease-out ${
+                    passwordStrength.strength === 'strong' 
+                      ? 'bg-primary w-full' 
+                      : passwordStrength.strength === 'medium'
+                      ? 'bg-yellow-500 w-2/3'
+                      : 'bg-destructive w-1/3'
+                  }`}
+                  style={{ width: `${passwordStrength.score}%` }}
+                />
+              </div>
+              
+              {/* Strength Icon & Label */}
+              <div className="flex items-center gap-1.5">
+                {passwordStrength.strength === 'strong' && (
+                  <>
+                    <ShieldCheck className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-semibold text-primary">Strong</span>
+                  </>
+                )}
+                {passwordStrength.strength === 'medium' && (
+                  <>
+                    <Shield className="w-4 h-4 text-yellow-500" />
+                    <span className="text-xs font-semibold text-yellow-500">Medium</span>
+                  </>
+                )}
+                {passwordStrength.strength === 'weak' && (
+                  <>
+                    <ShieldAlert className="w-4 h-4 text-destructive" />
+                    <span className="text-xs font-semibold text-destructive">Weak</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Strength Feedback */}
+            {passwordStrength.feedback.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {passwordStrength.feedback.map((tip, index) => (
+                  <span 
+                    key={index}
+                    className="text-xs px-2 py-1 rounded-md bg-muted/50 text-muted-foreground border border-border/50"
+                  >
+                    {tip}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {errors.password && (
-          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.password.message}</p>
+          <p className="text-sm text-destructive error-slide-down">{errors.password.message}</p>
         )}
       </div>
 
