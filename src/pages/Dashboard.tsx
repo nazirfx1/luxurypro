@@ -60,6 +60,7 @@ const Dashboard = () => {
   const [activeWidgets, setActiveWidgets] = useState<string[]>([]);
   const [editMode, setEditMode] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load saved layout from localStorage
   useEffect(() => {
@@ -95,6 +96,7 @@ const Dashboard = () => {
 
     setLayout(completeLayout);
     setActiveWidgets(loadedWidgets);
+    setIsLoading(false);
   }, []);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
@@ -220,34 +222,40 @@ const Dashboard = () => {
         )}
 
         {/* Dashboard Grid */}
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={{ lg: layout }}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={80}
-          onLayoutChange={handleLayoutChange}
-          isDraggable={editMode}
-          isResizable={editMode}
-          compactType="vertical"
-          preventCollision={false}
-        >
-          {activeWidgetConfigs.map((widget) => {
-            const WidgetComponent = widget.component;
-            return (
-              <div
-                key={widget.id}
-                className={editMode ? "cursor-move" : ""}
-                data-grid={{
-                  minW: widget.minW || 2,
-                  minH: widget.minH || 2,
-                }}
-              >
-                <WidgetComponent />
-              </div>
-            );
-          })}
-        </ResponsiveGridLayout>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-96">
+            <div className="text-muted-foreground">Loading dashboard...</div>
+          </div>
+        ) : (
+          <ResponsiveGridLayout
+            className="layout"
+            layouts={{ lg: layout }}
+            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+            rowHeight={80}
+            onLayoutChange={handleLayoutChange}
+            isDraggable={editMode}
+            isResizable={editMode}
+            compactType="vertical"
+            preventCollision={false}
+          >
+            {activeWidgetConfigs.map((widget) => {
+              const WidgetComponent = widget.component;
+              return (
+                <div
+                  key={widget.id}
+                  className={editMode ? "cursor-move" : ""}
+                  data-grid={{
+                    minW: widget.minW || 2,
+                    minH: widget.minH || 2,
+                  }}
+                >
+                  <WidgetComponent />
+                </div>
+              );
+            })}
+          </ResponsiveGridLayout>
+        )}
 
         {/* Widget Settings Dialog */}
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
