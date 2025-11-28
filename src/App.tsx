@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AIChatWidget } from "@/components/chat/AIChatWidget";
+import BrandedLoadingScreen from "@/components/BrandedLoadingScreen";
+import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -45,13 +48,28 @@ import Messages from "./pages/messages/Messages";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate app initialization
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AnimatePresence mode="wait">
+          <BrandedLoadingScreen isLoading={isLoading} />
+        </AnimatePresence>
+        <BrowserRouter>
+          <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/properties" element={<PropertiesListPublic />} />
@@ -326,11 +344,12 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <AIChatWidget />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+            <AIChatWidget />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
