@@ -77,12 +77,12 @@ const HowItWorks = () => {
                       {step.title}
                     </h3>
                     <p className="text-muted-foreground leading-relaxed text-sm">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                    {step.description}
+                  </p>
+                </motion.div>
+              </motion.div>
+            );
+          })}
           </div>
         </div>
       </div>

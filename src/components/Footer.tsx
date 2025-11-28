@@ -1,14 +1,31 @@
 import { Building2, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 const Footer = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <footer className="bg-brand-black text-foreground border-t border-border">
+    <footer className="bg-brand-black text-foreground border-t border-border" ref={ref}>
       <div className="container px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
-          <div className="space-y-6">
-            <img src={logo} alt="Luxury Properties" className="h-14 w-auto brightness-0 invert" />
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.img 
+              src={logo} 
+              alt="Luxury Properties" 
+              className="h-14 w-auto brightness-0 invert"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            />
             <p className="text-sm text-muted-foreground leading-relaxed">
               Premium real estate platform connecting you with luxury properties worldwide. 
               Your journey to exceptional living starts here.
@@ -19,47 +36,86 @@ const Footer = () => {
             </div>
             {/* Social Media */}
             <div className="flex gap-3">
-              <a href="#" className="w-10 h-10 rounded-full bg-muted hover:bg-primary transition-colors flex items-center justify-center group">
-                <Facebook className="w-5 h-5 text-foreground group-hover:text-primary-foreground" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-muted hover:bg-primary transition-colors flex items-center justify-center group">
-                <Twitter className="w-5 h-5 text-foreground group-hover:text-primary-foreground" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-muted hover:bg-primary transition-colors flex items-center justify-center group">
-                <Instagram className="w-5 h-5 text-foreground group-hover:text-primary-foreground" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-muted hover:bg-primary transition-colors flex items-center justify-center group">
-                <Linkedin className="w-5 h-5 text-foreground group-hover:text-primary-foreground" />
-              </a>
+              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, index) => (
+                <motion.a 
+                  key={index}
+                  href="#" 
+                  className="w-10 h-10 rounded-full bg-muted hover:bg-primary transition-colors flex items-center justify-center group"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+                >
+                  <Icon className="w-5 h-5 text-foreground group-hover:text-primary-foreground transition-colors" />
+                </motion.a>
+              ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
             <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">Quick Links</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Home</a></li>
-              <li><a href="#properties" className="text-sm text-muted-foreground hover:text-primary transition-colors">Properties</a></li>
-              <li><a href="#features" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="text-sm text-muted-foreground hover:text-primary transition-colors">How It Works</a></li>
-              <li><a href="#testimonials" className="text-sm text-muted-foreground hover:text-primary transition-colors">Testimonials</a></li>
+              {["Home", "Properties", "Features", "How It Works", "Testimonials"].map((link, index) => (
+                <motion.li 
+                  key={link}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4, delay: 0.2 + index * 0.05 }}
+                >
+                  <motion.a 
+                    href={`#${link.toLowerCase().replace(/\s+/g, '-')}`} 
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    whileHover={{ x: 5 }}
+                  >
+                    {link}
+                  </motion.a>
+                </motion.li>
+              ))}
             </ul>
-          </div>
+          </motion.div>
 
           {/* Services */}
-          <div className="space-y-4">
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">Services</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Property Management</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Buy Property</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Rent Property</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Investment Advisory</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Property Valuation</a></li>
+              {["Property Management", "Buy Property", "Rent Property", "Investment Advisory", "Property Valuation"].map((service, index) => (
+                <motion.li 
+                  key={service}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.05 }}
+                >
+                  <motion.a 
+                    href="#" 
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    whileHover={{ x: 5 }}
+                  >
+                    {service}
+                  </motion.a>
+                </motion.li>
+              ))}
             </ul>
-          </div>
+          </motion.div>
 
           {/* Contact */}
-          <div className="space-y-4">
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
             <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">Contact Us</h3>
             <ul className="space-y-4">
               <li className="flex items-start space-x-3 text-sm group">
@@ -81,7 +137,7 @@ const Footer = () => {
                 </span>
               </li>
             </ul>
-          </div>
+          </motion.div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border">
