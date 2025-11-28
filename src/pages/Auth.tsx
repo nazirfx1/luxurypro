@@ -1,17 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Users, Shield } from "lucide-react";
+import { Building2, Users, Shield, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import logo from "@/assets/logo.png";
 
 const Auth = () => {
   const { user, loading } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [activeTab, setActiveTab] = useState("login");
+  const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -23,6 +28,33 @@ const Auth = () => {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // Handle swipe gestures on mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && activeTab === "login") {
+      setActiveTab("signup");
+    }
+    if (isRightSwipe && activeTab === "signup") {
+      setActiveTab("login");
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -127,6 +159,65 @@ const Auth = () => {
         ></div>
         
         <div className="w-full max-w-md relative z-10 px-4 sm:px-0">
+          {/* Mobile Logo - Only visible on mobile */}
+          <div className="md:hidden mb-6 text-center">
+            <img 
+              src={logo} 
+              alt="Luxury Pro" 
+              className="h-16 w-auto mx-auto filter brightness-0 invert"
+              style={{ 
+                filter: 'brightness(0) invert(1) drop-shadow(0 0 15px rgba(197, 154, 0, 0.4))',
+              }}
+            />
+          </div>
+
+          {/* Collapsible Learn More - Only visible on mobile */}
+          <Collapsible 
+            open={isLearnMoreOpen} 
+            onOpenChange={setIsLearnMoreOpen}
+            className="md:hidden mb-4"
+          >
+            <CollapsibleTrigger className="w-full flex items-center justify-between p-4 glass-card rounded-xl text-white hover:bg-primary/5 transition-all">
+              <span className="text-sm font-medium">Why Luxury Pro?</span>
+              <ChevronDown 
+                className={`w-5 h-5 text-primary transition-transform duration-300 ${
+                  isLearnMoreOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-3 animate-accordion-down">
+              <div className="flex items-start gap-3 p-3 glass-card rounded-lg">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-sm mb-1">Smart Property Management</h4>
+                  <p className="text-white/60 text-xs">Manage all your properties from one powerful dashboard</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 glass-card rounded-lg">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-sm mb-1">Tenant Portal</h4>
+                  <p className="text-white/60 text-xs">Seamless communication and payment processing</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 glass-card rounded-lg">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Shield className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold text-sm mb-1">Enterprise Security</h4>
+                  <p className="text-white/60 text-xs">Bank-level encryption and data protection</p>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
           <div className="glass-card rounded-2xl p-6 sm:p-8 shadow-elegant transform-gpu">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center animate-fade-in-up group-hover:scale-105 transition-all duration-500 bg-gradient-to-r from-primary via-white to-primary bg-clip-text hover:text-transparent">
               {showForgotPassword ? "Reset Password" : "Get Started"}
@@ -135,7 +226,12 @@ const Auth = () => {
             {showForgotPassword ? (
               <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
             ) : (
-              <Tabs defaultValue="login" className="w-full animate-scale-in">
+              <div
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-scale-in">
                 <TabsList className="grid w-full grid-cols-2 mb-6 sm:mb-8 glass-card transition-all duration-300 hover:border-primary/50 h-12 sm:h-auto">
                   <TabsTrigger 
                     value="login" 
@@ -159,6 +255,7 @@ const Auth = () => {
                   <SignupForm />
                 </TabsContent>
               </Tabs>
+              </div>
             )}
           </div>
 
