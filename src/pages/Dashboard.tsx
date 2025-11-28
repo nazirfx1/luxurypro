@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Settings, Grip, Save, RotateCcw } from "lucide-react";
+import { Settings, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { Responsive, WidthProvider, Layout } from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
 import {
   Dialog,
   DialogContent,
@@ -25,133 +22,50 @@ import { MaintenanceWidget } from "@/components/dashboard/widgets/MaintenanceWid
 import { RecentActivityWidget } from "@/components/dashboard/widgets/RecentActivityWidget";
 import { ChartWidget } from "@/components/dashboard/widgets/ChartWidget";
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
 interface WidgetConfig {
   id: string;
   name: string;
   component: React.ComponentType;
-  minW?: number;
-  minH?: number;
+  defaultEnabled: boolean;
 }
 
 const AVAILABLE_WIDGETS: WidgetConfig[] = [
-  { id: "properties", name: "Properties", component: PropertyStatsWidget, minW: 2, minH: 2 },
-  { id: "revenue", name: "Revenue", component: RevenueWidget, minW: 2, minH: 2 },
-  { id: "users", name: "Users", component: UsersWidget, minW: 2, minH: 2 },
-  { id: "leases", name: "Leases", component: LeasesWidget, minW: 2, minH: 2 },
-  { id: "maintenance", name: "Maintenance", component: MaintenanceWidget, minW: 2, minH: 2 },
-  { id: "activity", name: "Recent Activity", component: RecentActivityWidget, minW: 3, minH: 4 },
-  { id: "chart", name: "Financial Chart", component: ChartWidget, minW: 4, minH: 3 },
-];
-
-const DEFAULT_LAYOUT: Layout[] = [
-  { i: "properties", x: 0, y: 0, w: 3, h: 2 },
-  { i: "revenue", x: 3, y: 0, w: 3, h: 2 },
-  { i: "users", x: 6, y: 0, w: 3, h: 2 },
-  { i: "leases", x: 9, y: 0, w: 3, h: 2 },
-  { i: "maintenance", x: 0, y: 2, w: 3, h: 2 },
-  { i: "chart", x: 3, y: 2, w: 6, h: 3 },
-  { i: "activity", x: 9, y: 2, w: 3, h: 4 },
+  { id: "properties", name: "Properties", component: PropertyStatsWidget, defaultEnabled: true },
+  { id: "revenue", name: "Revenue", component: RevenueWidget, defaultEnabled: true },
+  { id: "users", name: "Users", component: UsersWidget, defaultEnabled: true },
+  { id: "leases", name: "Leases", component: LeasesWidget, defaultEnabled: true },
+  { id: "maintenance", name: "Maintenance", component: MaintenanceWidget, defaultEnabled: true },
+  { id: "activity", name: "Recent Activity", component: RecentActivityWidget, defaultEnabled: true },
+  { id: "chart", name: "Financial Chart", component: ChartWidget, defaultEnabled: true },
 ];
 
 const Dashboard = () => {
-  const [layout, setLayout] = useState<Layout[]>([]);
   const [activeWidgets, setActiveWidgets] = useState<string[]>([]);
-  const [editMode, setEditMode] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Load saved layout from localStorage
+  // Load saved widgets from localStorage
   useEffect(() => {
-    const savedLayout = localStorage.getItem("dashboard-layout");
     const savedWidgets = localStorage.getItem("dashboard-widgets");
-
-    let loadedLayout = savedLayout ? JSON.parse(savedLayout) : DEFAULT_LAYOUT;
-    let loadedWidgets = savedWidgets 
-      ? JSON.parse(savedWidgets) 
-      : AVAILABLE_WIDGETS.map((w) => w.id);
-
-    // Ensure all active widgets have layout data
-    const layoutMap = new Map<string, Layout>(
-      loadedLayout.map((item: any) => [item.i, item as Layout])
-    );
-    const completeLayout: Layout[] = [];
-
-    loadedWidgets.forEach((widgetId: string) => {
-      if (layoutMap.has(widgetId)) {
-        completeLayout.push(layoutMap.get(widgetId)!);
-      } else {
-        // Add missing widget with default layout
-        const widgetConfig = AVAILABLE_WIDGETS.find((w) => w.id === widgetId);
-        completeLayout.push({
-          i: widgetId,
-          x: 0,
-          y: Infinity,
-          w: widgetConfig?.minW || 3,
-          h: widgetConfig?.minH || 2,
-        });
-      }
-    });
-
-    setLayout(completeLayout);
-    setActiveWidgets(loadedWidgets);
-    setIsLoading(false);
+    if (savedWidgets) {
+      setActiveWidgets(JSON.parse(savedWidgets));
+    } else {
+      setActiveWidgets(AVAILABLE_WIDGETS.filter(w => w.defaultEnabled).map((w) => w.id));
+    }
   }, []);
 
-  const handleLayoutChange = (newLayout: Layout[]) => {
-    if (editMode) {
-      setLayout(newLayout);
-    }
-  };
-
-  const handleSaveLayout = () => {
-    localStorage.setItem("dashboard-layout", JSON.stringify(layout));
-    localStorage.setItem("dashboard-widgets", JSON.stringify(activeWidgets));
-    setEditMode(false);
-    toast.success("Dashboard layout saved");
-  };
-
   const handleResetLayout = () => {
-    setLayout(DEFAULT_LAYOUT);
-    setActiveWidgets(AVAILABLE_WIDGETS.map((w) => w.id));
-    localStorage.removeItem("dashboard-layout");
+    setActiveWidgets(AVAILABLE_WIDGETS.filter(w => w.defaultEnabled).map((w) => w.id));
     localStorage.removeItem("dashboard-widgets");
     toast.success("Dashboard layout reset to default");
   };
 
   const toggleWidget = (widgetId: string) => {
     setActiveWidgets((prev) => {
-      const isRemoving = prev.includes(widgetId);
-      const newWidgets = isRemoving
+      const newWidgets = prev.includes(widgetId)
         ? prev.filter((id) => id !== widgetId)
         : [...prev, widgetId];
-
-      // If adding a widget, ensure it has layout data
-      if (!isRemoving) {
-        setLayout((currentLayout) => {
-          // Check if this widget already has layout data
-          const hasLayout = currentLayout.some((item) => item.i === widgetId);
-          if (!hasLayout) {
-            // Find the widget config to get default size
-            const widgetConfig = AVAILABLE_WIDGETS.find((w) => w.id === widgetId);
-            const defaultWidth = widgetConfig?.minW || 3;
-            const defaultHeight = widgetConfig?.minH || 2;
-            
-            // Add default layout for this widget
-            const newLayoutItem = {
-              i: widgetId,
-              x: 0,
-              y: Infinity, // Puts it at the bottom
-              w: defaultWidth,
-              h: defaultHeight,
-            };
-            return [...currentLayout, newLayoutItem];
-          }
-          return currentLayout;
-        });
-      }
-
+      
+      localStorage.setItem("dashboard-widgets", JSON.stringify(newWidgets));
       return newWidgets;
     });
   };
@@ -159,10 +73,6 @@ const Dashboard = () => {
   const activeWidgetConfigs = AVAILABLE_WIDGETS.filter((w) =>
     activeWidgets.includes(w.id)
   );
-
-  // Only render grid when layout is properly initialized
-  const canRenderGrid = !isLoading && layout.length > 0 && 
-    layout.every(item => item.i && typeof item.x === 'number');
 
   return (
     <DashboardLayout>
@@ -176,90 +86,43 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            {editMode ? (
-              <>
-                <Button variant="outline" onClick={() => setEditMode(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSaveLayout} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Layout
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setSettingsOpen(true)}
-                  className="gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  Widgets
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleResetLayout}
-                  className="gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </Button>
-                <Button onClick={() => setEditMode(true)} className="gap-2">
-                  <Grip className="w-4 h-4" />
-                  Customize
-                </Button>
-              </>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => setSettingsOpen(true)}
+              className="gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              Widgets
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleResetLayout}
+              className="gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </Button>
           </div>
         </div>
 
-        {/* Edit Mode Banner */}
-        {editMode && (
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Grip className="w-5 h-5 text-primary" />
-              <p className="font-medium">
-                Drag & drop widgets to customize your dashboard
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Dashboard Grid */}
-        {!canRenderGrid ? (
-          <div className="flex items-center justify-center h-96">
-            <div className="text-muted-foreground">Loading dashboard...</div>
-          </div>
-        ) : (
-          <ResponsiveGridLayout
-            className="layout"
-            layouts={{ lg: layout }}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-            rowHeight={80}
-            onLayoutChange={handleLayoutChange}
-            isDraggable={editMode}
-            isResizable={editMode}
-            compactType="vertical"
-            preventCollision={false}
-          >
-            {activeWidgetConfigs.map((widget) => {
-              const WidgetComponent = widget.component;
-              return (
-                <div
-                  key={widget.id}
-                  className={editMode ? "cursor-move" : ""}
-                  data-grid={{
-                    minW: widget.minW || 2,
-                    minH: widget.minH || 2,
-                  }}
-                >
-                  <WidgetComponent />
-                </div>
-              );
-            })}
-          </ResponsiveGridLayout>
-        )}
+        {/* Dashboard Grid - Simple CSS Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-min">
+          {activeWidgetConfigs.map((widget) => {
+            const WidgetComponent = widget.component;
+            // Chart and Activity widgets span more columns
+            const isWide = widget.id === 'chart';
+            const isTall = widget.id === 'activity' || widget.id === 'chart';
+            
+            return (
+              <div
+                key={widget.id}
+                className={`${isWide ? 'lg:col-span-2' : ''} ${isTall ? 'row-span-2' : ''}`}
+              >
+                <WidgetComponent />
+              </div>
+            );
+          })}
+        </div>
 
         {/* Widget Settings Dialog */}
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
