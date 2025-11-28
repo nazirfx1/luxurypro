@@ -1,4 +1,3 @@
-import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,11 @@ import Analytics from "./pages/admin/Analytics";
 import Settings from "./pages/admin/Settings";
 import ClientsList from "./pages/clients/ClientsList";
 import LeasesList from "./pages/leases/LeasesList";
+import UserManagement from "./pages/admin/UserManagement";
+import MyLease from "./pages/leases/MyLease";
+import MaintenanceRequests from "./pages/maintenance/MaintenanceRequests";
+import NewMaintenanceRequest from "./pages/maintenance/NewMaintenanceRequest";
+import Messages from "./pages/messages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -93,7 +97,7 @@ const App = () => (
               path="/dashboard/lease"
               element={
                 <ProtectedRoute>
-                  {React.createElement(React.lazy(() => import("./pages/leases/MyLease")))}
+                  <MyLease />
                 </ProtectedRoute>
               }
             />
@@ -101,7 +105,7 @@ const App = () => (
               path="/dashboard/maintenance"
               element={
                 <ProtectedRoute>
-                  {React.createElement(React.lazy(() => import("./pages/maintenance/MaintenanceRequests")))}
+                  <MaintenanceRequests />
                 </ProtectedRoute>
               }
             />
@@ -109,7 +113,7 @@ const App = () => (
               path="/dashboard/maintenance/new"
               element={
                 <ProtectedRoute>
-                  {React.createElement(React.lazy(() => import("./pages/maintenance/NewMaintenanceRequest")))}
+                  <NewMaintenanceRequest />
                 </ProtectedRoute>
               }
             />
@@ -117,7 +121,7 @@ const App = () => (
               path="/dashboard/messages"
               element={
                 <ProtectedRoute>
-                  {React.createElement(React.lazy(() => import("./pages/messages/Messages")))}
+                  <Messages />
                 </ProtectedRoute>
               }
             />
@@ -126,7 +130,7 @@ const App = () => (
               path="/dashboard/users"
               element={
                 <ProtectedRoute>
-                  {React.createElement(React.lazy(() => import("./pages/admin/UserManagement")))}
+                  <UserManagement />
                 </ProtectedRoute>
               }
             />
