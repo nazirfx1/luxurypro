@@ -199,7 +199,7 @@ const PropertiesListPublic = () => {
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
             {properties.map((property) => (
-              <Link key={property.id} to={`/properties/${property.id}`}>
+              <Link key={property.id} to={`/properties/${property.id}`} className="block">
                 <Card className="overflow-hidden hover:shadow-elegant transition-smooth group">
                   <div className="relative h-64 overflow-hidden">
                     <img
