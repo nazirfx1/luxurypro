@@ -5,6 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
@@ -13,6 +14,9 @@ const signupSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
   confirmPassword: z.string(),
+  role: z.enum(["tenant", "property_owner"], { 
+    required_error: "Please select a role" 
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -30,13 +34,17 @@ export const SignupForm = () => {
     handleSubmit,
     formState: { errors },
     setError,
+    setValue,
+    watch,
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
 
+  const selectedRole = watch("role");
+
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    const { error } = await signUp(data.email, data.password, data.fullName);
+    const { error } = await signUp(data.email, data.password, data.fullName, data.role);
     
     if (error) {
       if (error.message?.includes("already registered")) {
@@ -76,10 +84,42 @@ export const SignupForm = () => {
           type="email"
           placeholder="name@company.com"
           {...register("email")}
-          className="transition-smooth"
+          className="transition-smooth bg-background border-border text-foreground"
         />
         {errors.email && (
           <p className="text-sm text-destructive">{errors.email.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="role">Select Role *</Label>
+        <Select 
+          value={selectedRole} 
+          onValueChange={(value) => setValue("role", value as "tenant" | "property_owner", { shouldValidate: true })}
+        >
+          <SelectTrigger 
+            id="role"
+            className="w-full bg-background border-foreground border-[1.5px] text-foreground hover:border-primary transition-smooth"
+          >
+            <SelectValue placeholder="Choose your role" />
+          </SelectTrigger>
+          <SelectContent className="bg-background border-foreground z-50">
+            <SelectItem 
+              value="tenant"
+              className="text-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground cursor-pointer transition-smooth"
+            >
+              Tenant
+            </SelectItem>
+            <SelectItem 
+              value="property_owner"
+              className="text-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground cursor-pointer transition-smooth"
+            >
+              Property Owner
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.role && (
+          <p className="text-sm text-destructive">{errors.role.message}</p>
         )}
       </div>
 
@@ -128,7 +168,7 @@ export const SignupForm = () => {
 
       <Button
         type="submit"
-        className="w-full shadow-gold"
+        className="w-full bg-primary text-primary-foreground hover:bg-primary-hover shadow-yellow hover:shadow-yellow-lg transition-smooth"
         size="lg"
         disabled={isLoading}
       >

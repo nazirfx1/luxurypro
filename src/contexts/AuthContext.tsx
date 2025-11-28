@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, role: "tenant" | "property_owner") => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -42,37 +42,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, role: "tenant" | "property_owner") => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
           full_name: fullName,
+          role: role,
         },
       },
     });
 
-    if (!error) {
+    if (!error && data.user) {
+      // Insert role into user_roles table
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: data.user.id,
+          role: role,
+        });
+
+      if (roleError) {
+        console.error('Error assigning role:', roleError);
+      }
+
       toast.success("Account created successfully!");
-      navigate("/");
+      
+      // Redirect based on role
+      const redirectPath = role === "tenant" ? "/tenant/dashboard" : "/owner/dashboard";
+      navigate(redirectPath);
     }
 
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (!error) {
+    if (!error && data.user) {
+      // Get user role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
+
       toast.success("Signed in successfully!");
-      navigate("/dashboard");
+      
+      // Redirect based on role
+      if (roleData?.role === "tenant") {
+        navigate("/tenant/dashboard");
+      } else if (roleData?.role === "property_owner") {
+        navigate("/owner/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
 
     return { error };
