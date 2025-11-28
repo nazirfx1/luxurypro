@@ -209,4 +209,94 @@ All colors MUST be HSL.
   .glass-effect {
     @apply bg-card/50 backdrop-blur-xl border border-border/50;
   }
+
+  /* Floating label animation */
+  .floating-input {
+    @apply relative;
+  }
+
+  .floating-input input:focus ~ label,
+  .floating-input input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-6 text-xs text-primary;
+  }
+
+  .floating-input label {
+    @apply absolute left-3 top-2.5 text-muted-foreground transition-all duration-200 pointer-events-none;
+  }
+
+  /* Auth page animations */
+  .auth-fade-in {
+    animation: authFadeIn 0.6s ease-out;
+  }
+
+  .auth-slide-left {
+    animation: authSlideLeft 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .auth-slide-right {
+    animation: authSlideRight 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes authFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes authSlideLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes authSlideRight {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Error slide animation */
+  .error-slide-down {
+    animation: errorSlideDown 0.3s ease-out;
+  }
+
+  @keyframes errorSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Success pulse */
+  .success-pulse {
+    animation: successPulse 0.5s ease-in-out;
+  }
+
+  @keyframes successPulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
 }

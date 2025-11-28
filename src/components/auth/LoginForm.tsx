@@ -48,68 +48,83 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      {/* Email Field with Floating Label */}
+      <div className="relative">
         <Input
           id="email"
           type="email"
-          placeholder="name@company.com"
+          placeholder=" "
           {...register("email")}
-          className="transition-smooth"
+          className="peer h-12 pt-4 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
+        <Label 
+          htmlFor="email"
+          className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+        >
+          Email
+        </Label>
         {errors.email && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      {/* Password Field with Floating Label */}
+      <div className="relative">
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder=" "
             {...register("password")}
-            className="pr-10 transition-smooth"
+            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
+          <Label 
+            htmlFor="password"
+            className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+          >
+            Password
+          </Label>
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-primary transition-all duration-200 hover:scale-110 active:scale-95"
           >
-            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.password.message}</p>
         )}
       </div>
 
+      {/* Error Banner */}
       {errors.root && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-          <p className="text-sm text-destructive">{errors.root.message}</p>
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 error-slide-down backdrop-blur-sm">
+          <p className="text-sm text-destructive font-medium">{errors.root.message}</p>
         </div>
       )}
 
+      {/* Forgot Password Link */}
       <div className="flex items-center justify-end">
         <button
           type="button"
           onClick={onForgotPassword}
-          className="text-sm text-primary hover:text-primary/80 transition-colors"
+          className="text-sm text-primary hover:text-primary-hover transition-all duration-200 underline-offset-4 hover:underline font-medium"
         >
           Forgot password?
         </button>
       </div>
 
+      {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full shadow-gold"
+        className="w-full h-12 shadow-yellow-lg hover:shadow-yellow transition-all duration-300 active:scale-95 font-semibold text-base"
         size="lg"
         disabled={isLoading}
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             Signing in...
           </>
         ) : (

@@ -28,9 +28,13 @@ type SignupFormData = z.infer<typeof signupSchema>;
 export const SignupForm = () => {
   const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
   const [emailCheckTimer, setEmailCheckTimer] = useState<NodeJS.Timeout | null>(null);
+  const [emailStatus, setEmailStatus] = useState<{
+    status: 'idle' | 'checking' | 'valid' | 'taken' | 'invalid';
+    message?: string;
+  }>({ status: 'idle' });
 
   const {
     register,
@@ -59,7 +63,7 @@ export const SignupForm = () => {
 
     // Reset status if email is empty
     if (!emailValue || emailValue.trim() === '') {
-      setEmailStatus('idle');
+      setEmailStatus({ status: 'idle' });
       return;
     }
 
@@ -68,12 +72,15 @@ export const SignupForm = () => {
     const isValidFormat = emailRegex.test(emailValue);
 
     if (!isValidFormat) {
-      setEmailStatus('invalid');
+      setEmailStatus({ 
+        status: 'invalid', 
+        message: 'Please enter a valid email address.' 
+      });
       return;
     }
 
     // Email format is valid, now check availability after debounce
-    setEmailStatus('checking');
+    setEmailStatus({ status: 'checking', message: 'Checking...' });
     
     const timer = setTimeout(async () => {
       try {
@@ -86,18 +93,24 @@ export const SignupForm = () => {
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
           console.error('Error checking email:', error);
-          setEmailStatus('idle');
+          setEmailStatus({ status: 'idle' });
           return;
         }
 
         if (data) {
-          setEmailStatus('taken');
+          setEmailStatus({ 
+            status: 'taken', 
+            message: 'This email is already registered.' 
+          });
         } else {
-          setEmailStatus('available');
+          setEmailStatus({ 
+            status: 'valid', 
+            message: 'Email available.' 
+          });
         }
       } catch (error) {
         console.error('Error checking email availability:', error);
-        setEmailStatus('idle');
+        setEmailStatus({ status: 'idle' });
       }
     }, 450); // 450ms debounce
 
@@ -110,7 +123,7 @@ export const SignupForm = () => {
 
   // Check if form is valid for submission
   const isFormValid = 
-    emailStatus === 'available' &&
+    emailStatus.status === 'valid' &&
     selectedRole &&
     fullNameValue?.length >= 2 &&
     passwordValue?.length >= 8 &&
@@ -137,166 +150,170 @@ export const SignupForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name</Label>
+      {/* Full Name Field with Floating Label */}
+      <div className="relative">
         <Input
           id="fullName"
           type="text"
-          placeholder="John Doe"
+          placeholder=" "
           {...register("fullName")}
-          className="transition-smooth"
+          className="peer h-12 pt-4 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
-        {errors.fullName && (
-          <p className="text-sm text-destructive">{errors.fullName.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <div className="relative">
-          <Input
-            id="email"
-            type="email"
-            placeholder="name@company.com"
-            {...register("email")}
-            className={`transition-smooth pr-10 ${
-              emailStatus === 'available' ? 'border-primary' :
-              emailStatus === 'taken' || emailStatus === 'invalid' ? 'border-destructive' :
-              'border-border'
-            }`}
-            aria-describedby="email-status"
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            {emailStatus === 'checking' && (
-              <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-            )}
-            {emailStatus === 'available' && (
-              <CheckCircle className="w-4 h-4 text-primary" />
-            )}
-            {(emailStatus === 'taken' || emailStatus === 'invalid') && (
-              <AlertCircle className="w-4 h-4 text-destructive" />
-            )}
-          </div>
-        </div>
-        
-        {/* Email status messages */}
-        <div id="email-status" className="min-h-[20px]">
-          {emailStatus === 'invalid' && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Please enter a valid email address.
-            </p>
-          )}
-          {emailStatus === 'taken' && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              This email is already registered.
-            </p>
-          )}
-          {emailStatus === 'available' && (
-            <p className="text-sm text-primary flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" />
-              Email available.
-            </p>
-          )}
-          {emailStatus === 'checking' && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Checking availability...
-            </p>
-          )}
-        </div>
-        
-        {errors.email && emailStatus !== 'invalid' && emailStatus !== 'taken' && (
-          <p className="text-sm text-destructive">{errors.email.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="role">Select Role *</Label>
-        <Select 
-          value={selectedRole} 
-          onValueChange={(value) => setValue("role", value as "tenant" | "property_owner", { shouldValidate: true })}
+        <Label 
+          htmlFor="fullName"
+          className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
         >
-          <SelectTrigger 
-            id="role"
-            className="w-full bg-background border-foreground border-[1.5px] text-foreground hover:border-primary transition-smooth"
-          >
-            <SelectValue placeholder="Choose your role" />
-          </SelectTrigger>
-          <SelectContent className="bg-background border-foreground z-50">
-            <SelectItem 
-              value="tenant"
-              className="text-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground cursor-pointer transition-smooth"
-            >
-              Tenant
-            </SelectItem>
-            <SelectItem 
-              value="property_owner"
-              className="text-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground cursor-pointer transition-smooth"
-            >
-              Property Owner
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        {errors.role && (
-          <p className="text-sm text-destructive">{errors.role.message}</p>
+          Full Name
+        </Label>
+        {errors.fullName && (
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.fullName.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      {/* Email Field with Floating Label & Status */}
+      <div className="relative">
+        <Input
+          id="email"
+          type="email"
+          placeholder=" "
+          {...register("email")}
+          className={`peer h-12 pt-4 transition-all duration-200 ${
+            emailStatus.status === 'valid' 
+              ? 'border-primary focus:border-primary' 
+              : emailStatus.status === 'taken'
+              ? 'border-yellow-500 focus:border-yellow-500'
+              : emailStatus.status === 'invalid'
+              ? 'border-destructive focus:border-destructive'
+              : 'focus:border-primary'
+          } focus:ring-2 ${
+            emailStatus.status === 'valid' 
+              ? 'focus:ring-primary/20' 
+              : emailStatus.status === 'taken'
+              ? 'focus:ring-yellow-500/20'
+              : emailStatus.status === 'invalid'
+              ? 'focus:ring-destructive/20'
+              : 'focus:ring-primary/20'
+          }`}
+        />
+        <Label 
+          htmlFor="email"
+          className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+        >
+          Email
+        </Label>
+        {errors.email && (
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.email.message}</p>
+        )}
+        {emailStatus.message && (
+          <p className={`text-sm mt-1.5 font-medium animate-fade-in ${
+            emailStatus.status === 'valid' 
+              ? 'text-primary' 
+              : emailStatus.status === 'invalid'
+              ? 'text-destructive'
+              : 'text-yellow-500'
+          }`}>
+            {emailStatus.message}
+          </p>
+        )}
+      </div>
+
+      {/* Password Field with Floating Label */}
+      <div className="relative">
         <div className="relative">
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder=" "
             {...register("password")}
-            className="pr-10 transition-smooth"
+            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
+          <Label 
+            htmlFor="password"
+            className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+          >
+            Password
+          </Label>
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-primary transition-all duration-200 hover:scale-110 active:scale-95"
           >
-            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.password.message}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input
-          id="confirmPassword"
-          type={showPassword ? "text" : "password"}
-          placeholder="••••••••"
-          {...register("confirmPassword")}
-          className="transition-smooth"
-        />
+      {/* Confirm Password Field with Floating Label */}
+      <div className="relative">
+        <div className="relative">
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder=" "
+            {...register("confirmPassword")}
+            className="peer h-12 pt-4 pr-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+          <Label 
+            htmlFor="confirmPassword"
+            className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+          >
+            Confirm Password
+          </Label>
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-primary transition-all duration-200 hover:scale-110 active:scale-95"
+          >
+            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
+        </div>
         {errors.confirmPassword && (
-          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.confirmPassword.message}</p>
         )}
       </div>
 
+      {/* Role Selection */}
+      <div className="relative">
+        <Label htmlFor="role" className="text-sm font-medium mb-2 block">I am a</Label>
+        <Select onValueChange={(value: "tenant" | "property_owner") => setValue("role", value)}>
+          <SelectTrigger 
+            id="role" 
+            className="h-12 transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
+          >
+            <SelectValue placeholder="Select your role" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border">
+            <SelectItem value="tenant">Tenant</SelectItem>
+            <SelectItem value="property_owner">Property Owner</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.role && (
+          <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.role.message}</p>
+        )}
+      </div>
+
+      {/* Error Banner */}
       {errors.root && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-          <p className="text-sm text-destructive">{errors.root.message}</p>
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 error-slide-down backdrop-blur-sm">
+          <p className="text-sm text-destructive font-medium">{errors.root.message}</p>
         </div>
       )}
 
+      {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full bg-primary text-primary-foreground hover:bg-primary-hover shadow-yellow hover:shadow-yellow-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+        className={`w-full h-12 shadow-yellow-lg hover:shadow-yellow transition-all duration-300 active:scale-95 font-semibold text-base ${
+          !isFormValid || isLoading ? 'opacity-50' : ''
+        }`}
         size="lg"
-        disabled={isLoading || !isFormValid}
-        aria-label="Create account"
+        disabled={!isFormValid || isLoading}
       >
         {isLoading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             Creating account...
           </>
         ) : (
