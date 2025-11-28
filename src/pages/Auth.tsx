@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -11,6 +11,18 @@ import logo from "@/assets/logo.png";
 const Auth = () => {
   const { user, loading } = useAuth();
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      setMousePosition({ x, y });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Redirect if already authenticated
   if (!loading && user) {
@@ -31,9 +43,15 @@ const Auth = () => {
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Branding */}
       <div className="lg:w-1/2 bg-gradient-to-br from-black via-black to-black/95 p-8 lg:p-16 flex flex-col justify-center relative overflow-hidden">
-        {/* Decorative gradient orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/3 rounded-full blur-3xl"></div>
+        {/* Decorative gradient orbs with parallax */}
+        <div 
+          className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)` }}
+        ></div>
+        <div 
+          className="absolute bottom-0 left-0 w-80 h-80 bg-primary/3 rounded-full blur-3xl transition-transform duration-700 ease-out"
+          style={{ transform: `translate(${-mousePosition.x * 0.8}px, ${-mousePosition.y * 0.8}px)` }}
+        ></div>
         
         <div className="relative z-10 max-w-lg">
           {/* Logo */}
@@ -94,10 +112,19 @@ const Auth = () => {
 
       {/* Right Panel - Auth Forms */}
       <div className="lg:w-1/2 bg-black p-8 lg:p-16 flex items-center justify-center relative overflow-hidden">
-        {/* Floating orbs with animations */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float animate-glow-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 bg-primary/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-primary/5 rounded-full blur-lg animate-glow-pulse" style={{ animationDelay: '1s' }}></div>
+        {/* Floating orbs with animations and parallax */}
+        <div 
+          className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float animate-glow-pulse transition-transform duration-500"
+          style={{ transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)` }}
+        ></div>
+        <div 
+          className="absolute bottom-20 left-20 w-48 h-48 bg-primary/5 rounded-full blur-2xl animate-float transition-transform duration-500" 
+          style={{ animationDelay: '2s', transform: `translate(${-mousePosition.x * 0.3}px, ${-mousePosition.y * 0.3}px)` }}
+        ></div>
+        <div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-primary/5 rounded-full blur-lg animate-glow-pulse transition-transform duration-500" 
+          style={{ animationDelay: '1s', transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)` }}
+        ></div>
         
         <div className="w-full max-w-md relative z-10">
           <div className="glass-card rounded-2xl p-8 shadow-elegant transform-gpu">
