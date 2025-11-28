@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: "tenant" | "property_owner") => {
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/verify-email`;
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -70,11 +70,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error assigning role:', roleError);
       }
 
-      toast.success("Account created successfully!");
+      toast.success("Account created! Please verify your email.");
       
-      // Redirect based on role
-      const redirectPath = role === "tenant" ? "/tenant/dashboard" : "/owner/dashboard";
-      navigate(redirectPath);
+      // Redirect to email verification page
+      navigate("/verify-email");
     }
 
     return { error };
@@ -87,6 +86,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (!error && data.user) {
+      // Check if email is verified
+      if (!data.user.email_confirmed_at) {
+        toast.error("Your email is not verified yet. Please verify to continue.");
+        navigate("/verify-email");
+        return { error };
+      }
+
       // Get user role
       const { data: roleData } = await supabase
         .from('user_roles')
