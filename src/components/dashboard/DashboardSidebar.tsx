@@ -26,6 +26,7 @@ import {
   BarChart3,
   Settings,
   UserCog,
+  Shield,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -34,6 +35,7 @@ const menuItems = {
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Properties", url: "/dashboard/properties", icon: Building2 },
     { title: "Users", url: "/dashboard/users", icon: Users },
+    { title: "Permissions", url: "/dashboard/permissions", icon: Shield },
     { title: "Clients", url: "/dashboard/clients", icon: UserCog },
     { title: "Leases", url: "/dashboard/leases", icon: FileText },
     { title: "Maintenance", url: "/dashboard/maintenance", icon: Wrench },
@@ -46,6 +48,7 @@ const menuItems = {
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Properties", url: "/dashboard/properties", icon: Building2 },
     { title: "Users", url: "/dashboard/users", icon: Users },
+    { title: "Permissions", url: "/dashboard/permissions", icon: Shield },
     { title: "Clients", url: "/dashboard/clients", icon: UserCog },
     { title: "Leases", url: "/dashboard/leases", icon: FileText },
     { title: "Maintenance", url: "/dashboard/maintenance", icon: Wrench },
