@@ -7,6 +7,7 @@ import { useUserManagement } from "@/hooks/useUserManagement";
 import { UserManagementTable } from "@/components/admin/users/UserManagementTable";
 import { UserAnalyticsDashboard } from "@/components/admin/users/UserAnalyticsDashboard";
 import { RoleManagementDialog } from "@/components/admin/users/RoleManagementDialog";
+import { UserFormDialog } from "@/components/admin/users/UserFormDialog";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ const UserManagement = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [userFormOpen, setUserFormOpen] = useState(false);
 
   const {
     users,
@@ -36,11 +38,22 @@ const UserManagement = () => {
     restoreUser,
     assignRole,
     removeRole,
+    refresh,
   } = useUserManagement();
 
   const handleManageRoles = (user: any) => {
     setSelectedUser(user);
     setRoleDialogOpen(true);
+  };
+
+  const handleEditUser = (user: any) => {
+    setSelectedUser(user);
+    setUserFormOpen(true);
+  };
+
+  const handleCreateUser = () => {
+    setSelectedUser(null);
+    setUserFormOpen(true);
   };
 
   const exportData = users.map((user) => ({
@@ -72,6 +85,10 @@ const UserManagement = () => {
               {showAnalytics ? "Hide" : "Show"} Analytics
             </Button>
             <ExportMenu data={exportData} filename="users" />
+            <Button onClick={handleCreateUser} className="gap-2">
+              <UserPlus className="w-4 h-4" />
+              Create User
+            </Button>
           </div>
         </div>
 
@@ -128,13 +145,23 @@ const UserManagement = () => {
             onUpdateStatus={updateUserStatus}
             onDelete={softDeleteUser}
             onRestore={restoreUser}
-            onEdit={(user) => {
-              // TODO: Implement edit dialog
-              console.log("Edit user:", user);
-            }}
+            onEdit={handleEditUser}
             onManageRoles={handleManageRoles}
           />
         )}
+
+        {/* User Form Dialog */}
+        <UserFormDialog
+          user={selectedUser}
+          open={userFormOpen}
+          onClose={() => {
+            setUserFormOpen(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={() => {
+            refresh();
+          }}
+        />
 
         {/* Role Management Dialog */}
         <RoleManagementDialog
