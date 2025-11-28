@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_credentials: {
         Row: {
           created_at: string | null
@@ -388,6 +432,44 @@ export type Database = {
           },
         ]
       }
+      login_history: {
+        Row: {
+          created_at: string | null
+          device_info: Json | null
+          id: string
+          ip_address: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_media: {
         Row: {
           created_at: string | null
@@ -592,32 +674,71 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          id: string
+          module: string
+          name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          module: string
+          name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          module?: string
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          deleted_at: string | null
+          department: string | null
           email: string
           full_name: string
           id: string
+          last_login_at: string | null
           phone: string | null
+          status: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          department?: string | null
           email: string
           full_name: string
           id: string
+          last_login_at?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          department?: string | null
           email?: string
           full_name?: string
           id?: string
+          last_login_at?: string | null
           phone?: string | null
+          status?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -760,6 +881,35 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roles: {
         Row: {
           created_at: string | null
@@ -825,9 +975,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_permissions: {
+        Args: { _user_id: string }
+        Returns: {
+          action: string
+          module: string
+          permission_description: string
+          permission_name: string
+        }[]
+      }
       get_user_primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_permission: {
+        Args: { _permission_name: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -835,6 +998,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_activity: {
+        Args: {
+          _action: string
+          _details?: Json
+          _entity_id?: string
+          _entity_type?: string
+          _ip_address?: string
+          _user_agent?: string
+          _user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
