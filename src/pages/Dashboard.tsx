@@ -66,17 +66,35 @@ const Dashboard = () => {
     const savedLayout = localStorage.getItem("dashboard-layout");
     const savedWidgets = localStorage.getItem("dashboard-widgets");
 
-    if (savedLayout) {
-      setLayout(JSON.parse(savedLayout));
-    } else {
-      setLayout(DEFAULT_LAYOUT);
-    }
+    let loadedLayout = savedLayout ? JSON.parse(savedLayout) : DEFAULT_LAYOUT;
+    let loadedWidgets = savedWidgets 
+      ? JSON.parse(savedWidgets) 
+      : AVAILABLE_WIDGETS.map((w) => w.id);
 
-    if (savedWidgets) {
-      setActiveWidgets(JSON.parse(savedWidgets));
-    } else {
-      setActiveWidgets(AVAILABLE_WIDGETS.map((w) => w.id));
-    }
+    // Ensure all active widgets have layout data
+    const layoutMap = new Map<string, Layout>(
+      loadedLayout.map((item: any) => [item.i, item as Layout])
+    );
+    const completeLayout: Layout[] = [];
+
+    loadedWidgets.forEach((widgetId: string) => {
+      if (layoutMap.has(widgetId)) {
+        completeLayout.push(layoutMap.get(widgetId)!);
+      } else {
+        // Add missing widget with default layout
+        const widgetConfig = AVAILABLE_WIDGETS.find((w) => w.id === widgetId);
+        completeLayout.push({
+          i: widgetId,
+          x: 0,
+          y: Infinity,
+          w: widgetConfig?.minW || 3,
+          h: widgetConfig?.minH || 2,
+        });
+      }
+    });
+
+    setLayout(completeLayout);
+    setActiveWidgets(loadedWidgets);
   }, []);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
