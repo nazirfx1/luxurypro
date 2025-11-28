@@ -8,6 +8,14 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import SuperAdminDashboard from "./pages/dashboards/SuperAdminDashboard";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
+import ManagerDashboard from "./pages/dashboards/ManagerDashboard";
+import SalesAgentDashboard from "./pages/dashboards/SalesAgentDashboard";
+import PropertyOwnerDashboard from "./pages/dashboards/PropertyOwnerDashboard";
+import TenantDashboard from "./pages/dashboards/TenantDashboard";
+import SupportStaffDashboard from "./pages/dashboards/SupportStaffDashboard";
+import AccountantDashboard from "./pages/dashboards/AccountantDashboard";
 import PropertiesList from "./pages/properties/PropertiesList";
 import PropertyForm from "./pages/properties/PropertyForm";
 import PropertyDetail from "./pages/properties/PropertyDetail";
@@ -44,6 +52,70 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/super-admin"
+              element={
+                <ProtectedRoute>
+                  <SuperAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/manager"
+              element={
+                <ProtectedRoute>
+                  <ManagerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/sales-agent"
+              element={
+                <ProtectedRoute>
+                  <SalesAgentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/property-owner"
+              element={
+                <ProtectedRoute>
+                  <PropertyOwnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/tenant"
+              element={
+                <ProtectedRoute>
+                  <TenantDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/support-staff"
+              element={
+                <ProtectedRoute>
+                  <SupportStaffDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/accountant"
+              element={
+                <ProtectedRoute>
+                  <AccountantDashboard />
                 </ProtectedRoute>
               }
             />
@@ -96,6 +168,14 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/my-lease"
+              element={
+                <ProtectedRoute>
+                  <MyLease />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/lease"
               element={
                 <ProtectedRoute>
@@ -129,10 +209,26 @@ const App = () => (
             />
             <Route path="/setup-admin" element={<SetupAdminModern />} />
             <Route
+              path="/dashboard/user-management"
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/users"
               element={
                 <ProtectedRoute>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/permission-management"
+              element={
+                <ProtectedRoute>
+                  <PermissionManagement />
                 </ProtectedRoute>
               }
             />
