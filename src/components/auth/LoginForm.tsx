@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -23,6 +23,24 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
   const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [autofilledFields, setAutofilledFields] = useState({ email: false, password: false });
+
+  useEffect(() => {
+    const checkAutofill = () => {
+      const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+      const passwordInput = document.querySelector('input[id="password"]') as HTMLInputElement;
+
+      if (emailInput?.matches(':-webkit-autofill')) {
+        setAutofilledFields(prev => ({ ...prev, email: true }));
+      }
+      if (passwordInput?.matches(':-webkit-autofill')) {
+        setAutofilledFields(prev => ({ ...prev, password: true }));
+      }
+    };
+
+    const timer = setTimeout(checkAutofill, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const {
     register,
@@ -50,19 +68,26 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Email Field with Floating Label */}
       <div className="relative animate-slide-in-left transform-gpu">
-        <Input
-          id="email"
-          type="email"
-          placeholder=" "
-          {...register("email")}
-          className="peer h-12 pt-4 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
-        />
-        <Label 
-          htmlFor="email"
-          className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
-        >
-          Email
-        </Label>
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            placeholder=" "
+            {...register("email", {
+              onChange: () => setAutofilledFields(prev => ({ ...prev, email: false }))
+            })}
+            className="peer h-12 pt-4 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
+          />
+          <Label 
+            htmlFor="email"
+            className="absolute left-3 top-3 text-muted-foreground transition-all duration-200 pointer-events-none peer-focus:-translate-y-5 peer-focus:text-xs peer-focus:text-primary peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary"
+          >
+            Email
+          </Label>
+          {autofilledFields.email && (
+            <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary animate-scale-in" />
+          )}
+        </div>
         {errors.email && (
           <p className="text-sm text-destructive mt-1.5 error-slide-down">{errors.email.message}</p>
         )}
@@ -75,8 +100,10 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
             id="password"
             type={showPassword ? "text" : "password"}
             placeholder=" "
-            {...register("password")}
-            className="peer h-12 pt-4 pr-12 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
+            {...register("password", {
+              onChange: () => setAutofilledFields(prev => ({ ...prev, password: false }))
+            })}
+            className="peer h-12 pt-4 pr-20 glass-card transition-all duration-500 hover:scale-[1.02] focus:border-primary focus:ring-2 focus:ring-primary/20 focus:neon-glow"
           />
           <Label 
             htmlFor="password"
@@ -84,6 +111,9 @@ export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
           >
             Password
           </Label>
+          {autofilledFields.password && (
+            <CheckCircle2 className="absolute right-12 top-1/2 -translate-y-1/2 w-5 h-5 text-primary animate-scale-in" />
+          )}
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
