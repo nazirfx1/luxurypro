@@ -33,7 +33,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Search, Plus, Edit, FileText, Calendar } from "lucide-react";
+import { Search, Plus, Edit, FileText, Calendar, TrendingUp } from "lucide-react";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 type Lease = {
   id: string;
@@ -64,6 +66,8 @@ const LeasesList = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
   const [formData, setFormData] = useState({
@@ -137,7 +141,21 @@ const LeasesList = () => {
       lease.profiles?.full_name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || lease.status === statusFilter;
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    if (sortBy === "rent") return b.monthly_rent - a.monthly_rent;
+    if (sortBy === "start_date") return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
+    return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime();
   });
+
+  // Analytics
+  const totalRevenue = leases.reduce((sum, l) => sum + l.monthly_rent, 0);
+  const avgRent = leases.length > 0 ? totalRevenue / leases.length : 0;
+  const statusDist = ["active", "expired", "terminated"].map((status) => ({
+    name: status,
+    value: leases.filter((l) => l.status === status).length,
+  })).filter((s) => s.value > 0);
+
+  const CHART_COLORS = ["hsl(var(--primary))", "#f59e0b", "#ef4444"];
 
   const handleSave = async () => {
     try {
@@ -211,8 +229,8 @@ const LeasesList = () => {
         />
 
         <Card className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="relative flex-1 min-w-[250px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search leases..."
@@ -232,12 +250,73 @@ const LeasesList = () => {
                 <SelectItem value="terminated">Terminated</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Latest</SelectItem>
+                <SelectItem value="start_date">Start Date</SelectItem>
+                <SelectItem value="rent">Monthly Rent</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="gap-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </Button>
+            <ExportMenu data={filteredLeases} filename="leases" />
             <Button onClick={() => { resetForm(); setDialogOpen(true); }} className="gap-2">
               <Plus className="w-4 h-4" />
               New Lease
             </Button>
           </div>
         </Card>
+
+        {/* Analytics */}
+        {showAnalytics && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Leases</h3>
+              <p className="text-3xl font-bold text-primary">{leases.length}</p>
+              <p className="text-sm text-muted-foreground mt-1">Active agreements</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Monthly Revenue</h3>
+              <p className="text-3xl font-bold text-green-600">${totalRevenue.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Total rent income</p>
+            </Card>
+            <Card className="p-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Average Rent</h3>
+              <p className="text-3xl font-bold text-blue-600">${Math.round(avgRent).toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-1">Per lease</p>
+            </Card>
+            <Card className="p-6 md:col-span-3">
+              <h3 className="text-lg font-semibold mb-4">Lease Status Overview</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={statusDist}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    dataKey="value"
+                  >
+                    {statusDist.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+          </div>
+        )}
 
         <Card>
           <Table>

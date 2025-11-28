@@ -7,10 +7,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import {
   Select,
   SelectContent,
@@ -43,6 +45,8 @@ const MaintenanceRequests = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -100,8 +104,16 @@ const MaintenanceRequests = () => {
     const matchesSearch = req.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          req.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || req.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesPriority = priorityFilter === "all" || req.priority === priorityFilter;
+    return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  const priorityDist = ["low", "medium", "high", "urgent"].map((priority) => ({
+    name: priority,
+    value: requests.filter((r) => r.priority === priority).length,
+  })).filter((p) => p.value > 0);
+
+  const CHART_COLORS = ["#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
   const stats = {
     total: requests.length,
@@ -149,8 +161,8 @@ const MaintenanceRequests = () => {
 
       {/* Filters */}
       <Card className="p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
+        <div className="flex flex-col md:flex-row gap-4 flex-wrap">
+          <div className="flex-1 relative min-w-[250px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Search requests..."
@@ -161,8 +173,7 @@ const MaintenanceRequests = () => {
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full md:w-48">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
@@ -172,8 +183,54 @@ const MaintenanceRequests = () => {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priority</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="urgent">Urgent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            className="gap-2"
+          >
+            <TrendingUp className="w-4 h-4" />
+            Analytics
+          </Button>
+          <ExportMenu data={filteredRequests} filename="maintenance-requests" />
         </div>
       </Card>
+
+      {/* Analytics */}
+      {showAnalytics && (
+        <Card className="p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Request Priority Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={priorityDist}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                dataKey="value"
+              >
+                {priorityDist.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+      )}
 
       {/* Requests List */}
       {loading ? (

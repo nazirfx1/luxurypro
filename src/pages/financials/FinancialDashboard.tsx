@@ -4,9 +4,11 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, TrendingUp, TrendingDown, Plus, Calculator } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Plus, Calculator, Filter } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
+import { ExportMenu } from "@/components/shared/ExportMenu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const COLORS = ["#D4AF37", "#C19A2E", "#B08A26", "#9F7A1E"];
 
@@ -116,12 +118,33 @@ const FinancialDashboard = () => {
               <Calculator className="w-4 h-4 mr-2" />
               Cap Rate Calculator
             </Button>
+            <ExportMenu data={filteredData} filename="financial-records" />
             <Button onClick={() => window.location.href = "/dashboard/financials/new"}>
               <Plus className="w-4 h-4 mr-2" />
               Add Transaction
             </Button>
           </div>
         </div>
+
+        {/* Property Filter */}
+        <Card className="p-4">
+          <div className="flex items-center gap-4">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Filter by property" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Properties</SelectItem>
+                {properties.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
