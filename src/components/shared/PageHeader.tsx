@@ -23,18 +23,18 @@ export const PageHeader = ({ title, description, breadcrumbs, actions }: PageHea
         <Breadcrumb className="mb-2">
           <BreadcrumbList>
             {breadcrumbs.map((crumb, index) => (
-              <BreadcrumbItem key={index}>
-                {index < breadcrumbs.length - 1 ? (
-                  <>
+              <>
+                <BreadcrumbItem key={index}>
+                  {index < breadcrumbs.length - 1 ? (
                     <BreadcrumbLink asChild>
                       <Link to={crumb.href || "#"}>{crumb.label}</Link>
                     </BreadcrumbLink>
-                    <BreadcrumbSeparator />
-                  </>
-                ) : (
-                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                )}
-              </BreadcrumbItem>
+                  ) : (
+                    <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                  )}
+                </BreadcrumbItem>
+                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+              </>
             ))}
           </BreadcrumbList>
         </Breadcrumb>

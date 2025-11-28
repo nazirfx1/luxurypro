@@ -25,7 +25,7 @@ export const useUserManagement = () => {
         .from("profiles")
         .select(`
           *,
-          user_roles (*)
+          user_roles!user_roles_user_id_fkey (*)
         `)
         .is("deleted_at", null);
 
