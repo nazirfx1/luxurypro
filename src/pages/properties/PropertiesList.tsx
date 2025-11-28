@@ -35,6 +35,20 @@ const PropertiesList = () => {
 
   useEffect(() => {
     loadProperties();
+
+    // Realtime subscription for properties
+    const channel = supabase
+      .channel("properties-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        () => loadProperties()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadProperties = async () => {
