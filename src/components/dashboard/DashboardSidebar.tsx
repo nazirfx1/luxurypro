@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useSidebar } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
   Building2,
@@ -15,12 +28,7 @@ import {
   UserCog,
   Shield,
 } from "lucide-react";
-import { Menu } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { ModernSidebarGroup } from "./ModernSidebarGroup";
-import { ModernSidebarItem } from "./ModernSidebarItem";
-import { ModernSidebarFooter } from "./ModernSidebarFooter";
-import { cn } from "@/lib/utils";
 
 const menuItems = {
   super_admin: [
@@ -87,9 +95,11 @@ const menuItems = {
 };
 
 export const DashboardSidebar = () => {
-  const { state, toggleSidebar } = useSidebar();
+  const { state } = useSidebar();
+  const location = useLocation();
   const { user } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const currentPath = location.pathname;
   const isCollapsed = state === "collapsed";
 
   useEffect(() => {
@@ -114,132 +124,37 @@ export const DashboardSidebar = () => {
 
   const items = userRole ? menuItems[userRole as keyof typeof menuItems] || menuItems.tenant : menuItems.tenant;
 
-  // Group items by category
-  const mainItems = items.filter(item => 
-    ["Dashboard", "Properties", "My Properties", "My Lease"].includes(item.title)
-  );
-  
-  const managementItems = items.filter(item =>
-    ["Users", "Permissions", "Clients", "Leases"].includes(item.title)
-  );
-  
-  const operationsItems = items.filter(item =>
-    ["Maintenance", "Messages"].includes(item.title)
-  );
-  
-  const financialItems = items.filter(item =>
-    ["Financials", "Analytics"].includes(item.title)
-  );
-  
-  const settingsItems = items.filter(item =>
-    item.title === "Settings"
-  );
-
   return (
-    <div
-      className={cn(
-        "h-screen bg-sidebar-background border-r border-sidebar-border flex flex-col transition-all duration-300",
-        isCollapsed ? "w-20" : "w-64"
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        {!isCollapsed && (
-          <img src={logo} alt="Luxury Pro" className="h-10 w-auto" />
-        )}
-        {isCollapsed && (
-          <img src={logo} alt="Luxury Pro" className="h-8 w-auto mx-auto" />
-        )}
-        {!isCollapsed && (
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-lg hover:bg-sidebar-hover/10 text-sidebar-foreground hover:text-sidebar-hover transition-colors"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        )}
+    <Sidebar className={isCollapsed ? "w-14" : "w-60"}>
+      <div className="p-4 border-b border-border">
+        {!isCollapsed && <img src={logo} alt="Luxury Pro" className="h-10 w-auto" />}
+        {isCollapsed && <img src={logo} alt="Luxury Pro" className="h-8 w-auto" />}
       </div>
 
-      {/* Navigation Content */}
-      <div className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent">
-        {/* Main Navigation */}
-        {mainItems.length > 0 && (
-          <ModernSidebarGroup title="Main" isCollapsed={isCollapsed} defaultOpen={true}>
-            {mainItems.map((item) => (
-              <ModernSidebarItem
-                key={item.title}
-                title={item.title}
-                url={item.url}
-                icon={item.icon}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </ModernSidebarGroup>
-        )}
-
-        {/* Management */}
-        {managementItems.length > 0 && (
-          <ModernSidebarGroup title="Management" isCollapsed={isCollapsed} defaultOpen={true}>
-            {managementItems.map((item) => (
-              <ModernSidebarItem
-                key={item.title}
-                title={item.title}
-                url={item.url}
-                icon={item.icon}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </ModernSidebarGroup>
-        )}
-
-        {/* Operations */}
-        {operationsItems.length > 0 && (
-          <ModernSidebarGroup title="Operations" isCollapsed={isCollapsed} defaultOpen={true}>
-            {operationsItems.map((item) => (
-              <ModernSidebarItem
-                key={item.title}
-                title={item.title}
-                url={item.url}
-                icon={item.icon}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </ModernSidebarGroup>
-        )}
-
-        {/* Financial */}
-        {financialItems.length > 0 && (
-          <ModernSidebarGroup title="Financial" isCollapsed={isCollapsed} defaultOpen={true}>
-            {financialItems.map((item) => (
-              <ModernSidebarItem
-                key={item.title}
-                title={item.title}
-                url={item.url}
-                icon={item.icon}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </ModernSidebarGroup>
-        )}
-
-        {/* Settings */}
-        {settingsItems.length > 0 && (
-          <ModernSidebarGroup title="System" isCollapsed={isCollapsed} defaultOpen={false}>
-            {settingsItems.map((item) => (
-              <ModernSidebarItem
-                key={item.title}
-                title={item.title}
-                url={item.url}
-                icon={item.icon}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </ModernSidebarGroup>
-        )}
-      </div>
-
-      {/* Footer */}
-      <ModernSidebarFooter isCollapsed={isCollapsed} />
-    </div>
+      <SidebarContent>
+        <SidebarGroup>
+          {!isCollapsed && <SidebarGroupLabel>Navigation</SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className="hover:bg-muted/50 transition-colors"
+                      activeClassName="bg-primary/10 text-primary font-medium border-l-2 border-primary"
+                    >
+                      <item.icon className={`${isCollapsed ? "" : "mr-2"} h-4 w-4`} />
+                      {!isCollapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 };

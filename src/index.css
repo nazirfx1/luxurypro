@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -13,16 +17,20 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4%;
 
+    /* Luxury gold primary color */
     --primary: 43 74% 53%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 43 84% 65%;
 
+    /* Rich black secondary */
     --secondary: 0 0% 4%;
     --secondary-foreground: 0 0% 100%;
 
+    /* Muted backgrounds */
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 40%;
 
+    /* Accent gold variant */
     --accent: 43 74% 53%;
     --accent-foreground: 0 0% 4%;
 
@@ -35,29 +43,25 @@
 
     --radius: 0.75rem;
 
+    /* Custom luxury theme colors */
     --gold: 43 74% 53%;
     --gold-light: 43 84% 65%;
     --gold-dark: 43 64% 43%;
     --black: 0 0% 4%;
     --black-light: 0 0% 15%;
 
+    /* Gradients */
     --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
 
+    /* Shadows */
     --shadow-gold: 0 10px 40px -10px hsl(var(--gold) / 0.3);
     --shadow-elegant: 0 4px 20px -4px hsl(0 0% 0% / 0.1);
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.08);
 
+    /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-hover: 45 100% 39%;
-    --sidebar-active: 45 100% 39%;
-    --sidebar-active-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-glow: 45 100% 50%;
   }
 
   .dark {
@@ -88,16 +92,10 @@
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 43 74% 53%;
-
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-hover: 45 100% 39%;
-    --sidebar-active: 45 100% 39%;
-    --sidebar-active-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-glow: 45 100% 50%;
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
