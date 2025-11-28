@@ -102,11 +102,37 @@ const Dashboard = () => {
 
   const toggleWidget = (widgetId: string) => {
     setActiveWidgets((prev) => {
-      if (prev.includes(widgetId)) {
-        return prev.filter((id) => id !== widgetId);
-      } else {
-        return [...prev, widgetId];
+      const isRemoving = prev.includes(widgetId);
+      const newWidgets = isRemoving
+        ? prev.filter((id) => id !== widgetId)
+        : [...prev, widgetId];
+
+      // If adding a widget, ensure it has layout data
+      if (!isRemoving) {
+        setLayout((currentLayout) => {
+          // Check if this widget already has layout data
+          const hasLayout = currentLayout.some((item) => item.i === widgetId);
+          if (!hasLayout) {
+            // Find the widget config to get default size
+            const widgetConfig = AVAILABLE_WIDGETS.find((w) => w.id === widgetId);
+            const defaultWidth = widgetConfig?.minW || 3;
+            const defaultHeight = widgetConfig?.minH || 2;
+            
+            // Add default layout for this widget
+            const newLayoutItem = {
+              i: widgetId,
+              x: 0,
+              y: Infinity, // Puts it at the bottom
+              w: defaultWidth,
+              h: defaultHeight,
+            };
+            return [...currentLayout, newLayoutItem];
+          }
+          return currentLayout;
+        });
       }
+
+      return newWidgets;
     });
   };
 
