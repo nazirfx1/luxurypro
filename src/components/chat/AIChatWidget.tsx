@@ -140,7 +140,7 @@ export const AIChatWidget = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-elegant bg-brand-black hover:bg-brand-black-light text-brand-yellow z-50"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 h-14 w-14 rounded-full shadow-elegant bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black z-50 transition-smooth active:scale-95"
       >
         <MessageCircle className="h-6 w-6" />
       </Button>
@@ -152,22 +152,30 @@ export const AIChatWidget = () => {
       className={cn(
         "fixed bg-brand-black border border-brand-yellow/20 shadow-yellow z-50 transition-all",
         isFullScreen
-          ? "inset-4"
-          : "bottom-6 right-6 w-96 h-[600px] rounded-lg"
+          ? "inset-0 md:inset-4 rounded-none md:rounded-lg"
+          : "bottom-0 md:bottom-6 left-0 md:left-auto right-0 md:right-6 w-full md:w-96 h-[100dvh] md:h-[600px] rounded-t-2xl md:rounded-lg"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-brand-yellow/20">
-        <div className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5 text-brand-yellow" />
-          <h3 className="font-semibold text-white">AI Support</h3>
+      <div className="flex items-center justify-between p-4 md:p-4 border-b border-brand-yellow/20 bg-brand-black sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="h-10 w-10 rounded-full bg-brand-yellow flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-brand-black" />
+            </div>
+            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-brand-black"></div>
+          </div>
+          <div>
+            <h3 className="font-semibold text-white">AI Support</h3>
+            <p className="text-xs text-brand-yellow">Online</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsFullScreen(!isFullScreen)}
-            className="h-8 w-8 text-white hover:bg-brand-yellow/10 hover:text-brand-yellow"
+            className="hidden md:flex h-9 w-9 text-white hover:bg-brand-yellow/10 hover:text-brand-yellow transition-smooth"
           >
             {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
@@ -175,7 +183,7 @@ export const AIChatWidget = () => {
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(false)}
-            className="h-8 w-8 text-white hover:bg-brand-yellow/10 hover:text-brand-yellow"
+            className="h-9 w-9 text-white hover:bg-brand-yellow/10 hover:text-brand-yellow transition-smooth active:scale-95"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -183,22 +191,22 @@ export const AIChatWidget = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" style={{ height: 'calc(100% - 140px)' }} ref={scrollRef}>
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-3 md:p-4" style={{ height: 'calc(100% - 140px)' }} ref={scrollRef}>
+        <div className="space-y-3 md:space-y-4">
           {messages.map((message, index) => (
             <div
               key={index}
               className={cn(
-                "flex",
+                "flex animate-fade-in-up",
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
               <div
                 className={cn(
-                  "max-w-[80%] rounded-lg px-4 py-2 text-sm whitespace-pre-wrap",
+                  "max-w-[85%] md:max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base whitespace-pre-wrap shadow-card transition-smooth",
                   message.role === 'user'
-                    ? 'bg-brand-yellow text-brand-black'
-                    : 'bg-brand-black-light text-white border border-brand-yellow/20'
+                    ? 'bg-brand-yellow text-brand-black rounded-br-md'
+                    : 'bg-brand-black-light text-white border border-brand-yellow/20 rounded-bl-md'
                 )}
               >
                 {message.content}
@@ -206,12 +214,12 @@ export const AIChatWidget = () => {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-brand-black-light text-white border border-brand-yellow/20 rounded-lg px-4 py-2 text-sm">
-                <div className="flex gap-1">
-                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>●</span>
-                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>●</span>
-                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>●</span>
+            <div className="flex justify-start animate-fade-in">
+              <div className="bg-brand-black-light text-white border border-brand-yellow/20 rounded-2xl rounded-bl-md px-5 py-3 text-sm">
+                <div className="flex gap-1.5">
+                  <span className="animate-bounce text-brand-yellow" style={{ animationDelay: '0ms' }}>●</span>
+                  <span className="animate-bounce text-brand-yellow" style={{ animationDelay: '150ms' }}>●</span>
+                  <span className="animate-bounce text-brand-yellow" style={{ animationDelay: '300ms' }}>●</span>
                 </div>
               </div>
             </div>
@@ -220,8 +228,8 @@ export const AIChatWidget = () => {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t border-brand-yellow/20">
-        <div className="flex gap-2">
+      <div className="p-3 md:p-4 border-t border-brand-yellow/20 bg-brand-black sticky bottom-0">
+        <div className="flex gap-2 items-end">
           <Textarea
             ref={textareaRef}
             value={input}
@@ -232,15 +240,15 @@ export const AIChatWidget = () => {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
-            className="min-h-[40px] max-h-[120px] resize-none bg-brand-black-light border-brand-yellow/20 text-white placeholder:text-white/50 focus:border-brand-yellow"
+            className="min-h-[44px] md:min-h-[40px] max-h-[120px] resize-none bg-brand-black-light border-brand-yellow/20 text-white placeholder:text-white/50 focus:border-brand-yellow rounded-2xl text-base md:text-sm transition-smooth"
             disabled={isLoading}
           />
           <Button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="h-10 w-10 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black"
+            className="h-11 w-11 md:h-10 md:w-10 flex-shrink-0 bg-brand-yellow hover:bg-brand-yellow-dark text-brand-black rounded-full transition-smooth active:scale-95 shadow-yellow disabled:opacity-50"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5 md:h-4 md:w-4" />
           </Button>
         </div>
       </div>
