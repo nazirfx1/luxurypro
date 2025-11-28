@@ -50,14 +50,24 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    // Simulate app initialization
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    // Simulate app initialization with progress updates
+    const progressInterval = setInterval(() => {
+      setLoadingProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          setTimeout(() => setIsLoading(false), 300);
+          return 100;
+        }
+        // Randomize progress increment for realistic feel
+        const increment = Math.random() * 15 + 5;
+        return Math.min(prev + increment, 100);
+      });
+    }, 150);
 
-    return () => clearTimeout(timer);
+    return () => clearInterval(progressInterval);
   }, []);
 
   return (
@@ -66,7 +76,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <AnimatePresence mode="wait">
-          <BrandedLoadingScreen isLoading={isLoading} />
+          <BrandedLoadingScreen isLoading={isLoading} progress={loadingProgress} />
         </AnimatePresence>
         <BrowserRouter>
           <AuthProvider>
