@@ -159,6 +159,30 @@ export type Database = {
           },
         ]
       }
+      cities: {
+        Row: {
+          country: string
+          created_at: string | null
+          id: string
+          name: string
+          state: string | null
+        }
+        Insert: {
+          country?: string
+          created_at?: string | null
+          id?: string
+          name: string
+          state?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          state?: string | null
+        }
+        Relationships: []
+      }
       client_interactions: {
         Row: {
           client_id: string

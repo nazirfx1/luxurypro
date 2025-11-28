@@ -3,13 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Home, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const HeroSection = () => {
   const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
+  const [cities, setCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
+  const [filteredCities, setFilteredCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
   const [location, setLocation] = useState("");
   const [propertyType, setPropertyType] = useState("");
   const [priceRange, setPriceRange] = useState("");
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const locationInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Fetch unique property types from database
@@ -25,10 +29,23 @@ const HeroSection = () => {
       }
     };
 
+    // Fetch cities
+    const fetchCities = async () => {
+      const { data } = await supabase
+        .from('cities')
+        .select('id, name, state')
+        .order('name');
+      
+      if (data) {
+        setCities(data);
+      }
+    };
+
     fetchPropertyTypes();
+    fetchCities();
 
     // Subscribe to realtime updates
-    const channel = supabase
+    const propertiesChannel = supabase
       .channel('properties-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'properties' },
@@ -38,10 +55,35 @@ const HeroSection = () => {
       )
       .subscribe();
 
+    const citiesChannel = supabase
+      .channel('cities-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'cities' },
+        () => {
+          fetchCities();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(propertiesChannel);
+      supabase.removeChannel(citiesChannel);
     };
   }, []);
+
+  useEffect(() => {
+    if (location) {
+      const filtered = cities.filter(city =>
+        city.name.toLowerCase().includes(location.toLowerCase()) ||
+        city.state?.toLowerCase().includes(location.toLowerCase())
+      ).slice(0, 5);
+      setFilteredCities(filtered);
+      setShowCitySuggestions(true);
+    } else {
+      setFilteredCities([]);
+      setShowCitySuggestions(false);
+    }
+  }, [location, cities]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-brand-black">
@@ -71,14 +113,34 @@ const HeroSection = () => {
           {/* Advanced Search Bar */}
           <div className="w-full max-w-5xl glass-effect rounded-2xl p-4 md:p-6 animate-fade-in-up delay-300">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 px-4 py-3 bg-muted/50 rounded-xl">
+              <div className="relative flex items-center gap-3 px-4 py-3 bg-muted/50 rounded-xl">
                 <MapPin className="w-5 h-5 text-primary" />
                 <Input 
+                  ref={locationInputRef}
                   placeholder="Location" 
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  onFocus={() => location && setShowCitySuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
                   className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground"
                 />
+                {showCitySuggestions && filteredCities.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <button
+                        key={city.id}
+                        onClick={() => {
+                          setLocation(`${city.name}, ${city.state}`);
+                          setShowCitySuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-smooth text-foreground flex items-center gap-2"
+                      >
+                        <MapPin className="w-4 h-4 text-primary" />
+                        <span>{city.name}, {city.state}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="flex items-center gap-3">
