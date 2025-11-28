@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Smartphone, Apple, PlaySquare } from "lucide-react";
+import { Apple, PlaySquare } from "lucide-react";
+import mobileMockupDashboard from "@/assets/mobile-mockup-dashboard.png";
+import mobileMockupSignin from "@/assets/mobile-mockup-signin.png";
 
 const DownloadApp = () => {
   return (
@@ -14,10 +16,6 @@ const DownloadApp = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Content */}
           <div className="space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center justify-center lg:justify-start w-16 h-16 rounded-2xl bg-primary/10">
-              <Smartphone className="w-8 h-8 text-primary" />
-            </div>
-
             <div className="space-y-4">
               <h2 className="text-3xl md:text-5xl font-bold text-foreground">
                 Track Your Property Journey
@@ -90,18 +88,22 @@ const DownloadApp = () => {
           {/* App Mockups */}
           <div className="relative">
             <div className="flex items-center justify-center gap-4">
-              {/* iPhone Mockup */}
+              {/* Sign In Mockup */}
               <div className="w-64 h-[500px] bg-card border-8 border-border rounded-[3rem] shadow-2xl overflow-hidden transform rotate-6 hover:rotate-0 transition-transform">
-                <div className="bg-gradient-to-br from-primary/20 to-primary/5 h-full flex items-center justify-center">
-                  <Smartphone className="w-20 h-20 text-primary" />
-                </div>
+                <img 
+                  src={mobileMockupSignin} 
+                  alt="Mobile app sign in screen" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               
-              {/* Android Mockup */}
+              {/* Dashboard Mockup */}
               <div className="w-64 h-[500px] bg-card border-8 border-border rounded-[2.5rem] shadow-2xl overflow-hidden transform -rotate-6 hover:rotate-0 transition-transform">
-                <div className="bg-gradient-to-br from-primary/5 to-primary/20 h-full flex items-center justify-center">
-                  <Smartphone className="w-20 h-20 text-primary" />
-                </div>
+                <img 
+                  src={mobileMockupDashboard} 
+                  alt="Mobile app dashboard screen" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
