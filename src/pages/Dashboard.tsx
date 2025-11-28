@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Settings, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -40,128 +40,36 @@ const AVAILABLE_WIDGETS: WidgetConfig[] = [
 ];
 
 const Dashboard = () => {
-  const [activeWidgets, setActiveWidgets] = useState<string[]>([]);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load saved widgets from localStorage
   useEffect(() => {
-    const savedWidgets = localStorage.getItem("dashboard-widgets");
-    if (savedWidgets) {
-      setActiveWidgets(JSON.parse(savedWidgets));
-    } else {
-      setActiveWidgets(AVAILABLE_WIDGETS.filter(w => w.defaultEnabled).map((w) => w.id));
-    }
-  }, []);
+    if (!user) return;
 
-  const handleResetLayout = () => {
-    setActiveWidgets(AVAILABLE_WIDGETS.filter(w => w.defaultEnabled).map((w) => w.id));
-    localStorage.removeItem("dashboard-widgets");
-    toast.success("Dashboard layout reset to default");
-  };
-
-  const toggleWidget = (widgetId: string) => {
-    setActiveWidgets((prev) => {
-      const newWidgets = prev.includes(widgetId)
-        ? prev.filter((id) => id !== widgetId)
-        : [...prev, widgetId];
+    const loadUserRole = async () => {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).order("assigned_at", { ascending: true }).limit(1).single();
       
-      localStorage.setItem("dashboard-widgets", JSON.stringify(newWidgets));
-      return newWidgets;
-    });
-  };
+      if (data?.role) {
+        setUserRole(data.role);
+        navigate(`/dashboard/${data.role.replace(/_/g, "-")}`);
+      }
+      setLoading(false);
+    };
 
-  const activeWidgetConfigs = AVAILABLE_WIDGETS.filter((w) =>
-    activeWidgets.includes(w.id)
-  );
+    loadUserRole();
+  }, [user, navigate]);
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Welcome back! Here's your overview
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setSettingsOpen(true)}
-              className="gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Widgets
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleResetLayout}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset
-            </Button>
-          </div>
-        </div>
-
-        {/* Dashboard Grid - Simple CSS Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-min">
-          {activeWidgetConfigs.map((widget) => {
-            const WidgetComponent = widget.component;
-            // Chart and Activity widgets span more columns
-            const isWide = widget.id === 'chart';
-            const isTall = widget.id === 'activity' || widget.id === 'chart';
-            
-            return (
-              <div
-                key={widget.id}
-                className={`${isWide ? 'lg:col-span-2' : ''} ${isTall ? 'row-span-2' : ''}`}
-              >
-                <WidgetComponent />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Widget Settings Dialog */}
-        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Manage Widgets</DialogTitle>
-              <DialogDescription>
-                Select which widgets to display on your dashboard
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              {AVAILABLE_WIDGETS.map((widget) => (
-                <div key={widget.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={widget.id}
-                    checked={activeWidgets.includes(widget.id)}
-                    onCheckedChange={() => toggleWidget(widget.id)}
-                  />
-                  <Label
-                    htmlFor={widget.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {widget.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setSettingsOpen(false)}>
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
-    </DashboardLayout>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default Dashboard;
