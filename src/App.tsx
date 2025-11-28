@@ -16,6 +16,10 @@ import FinancialDashboard from "./pages/financials/FinancialDashboard";
 import CapRateCalculator from "./pages/financials/CapRateCalculator";
 import NotFound from "./pages/NotFound";
 import SetupAdminModern from "./pages/admin/SetupAdminModern";
+import Analytics from "./pages/admin/Analytics";
+import Settings from "./pages/admin/Settings";
+import ClientsList from "./pages/clients/ClientsList";
+import LeasesList from "./pages/leases/LeasesList";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +127,38 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   {React.createElement(React.lazy(() => import("./pages/admin/UserManagement")))}
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/analytics"
+              element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/clients"
+              element={
+                <ProtectedRoute>
+                  <ClientsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/leases"
+              element={
+                <ProtectedRoute>
+                  <LeasesList />
                 </ProtectedRoute>
               }
             />
