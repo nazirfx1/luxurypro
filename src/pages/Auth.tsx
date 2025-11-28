@@ -40,9 +40,9 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Left Panel - Branding */}
-      <div className="lg:w-1/2 bg-gradient-to-br from-black via-black to-black/95 p-8 lg:p-16 flex flex-col justify-center relative overflow-hidden">
+    <div className="min-h-screen flex">
+      {/* Left Panel - Branding (hidden on mobile) */}
+      <div className="hidden md:flex md:w-1/2 lg:w-1/2 bg-gradient-to-br from-black via-black to-black/95 p-6 md:p-8 lg:p-16 flex-col justify-center relative overflow-hidden">
         {/* Decorative gradient orbs with parallax */}
         <div 
           className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transition-transform duration-700 ease-out"
@@ -110,25 +110,25 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Right Panel - Auth Forms */}
-      <div className="lg:w-1/2 bg-black p-8 lg:p-16 flex items-center justify-center relative overflow-hidden">
+      {/* Right Panel - Auth Forms (full-width on mobile) */}
+      <div className="w-full md:w-1/2 lg:w-1/2 bg-black p-6 sm:p-8 md:p-12 lg:p-16 flex items-center justify-center relative overflow-hidden min-h-screen">
         {/* Floating orbs with animations and parallax */}
         <div 
-          className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float animate-glow-pulse transition-transform duration-500"
+          className="absolute top-10 md:top-20 right-10 md:right-20 w-48 md:w-64 h-48 md:h-64 bg-primary/10 rounded-full blur-3xl animate-float animate-glow-pulse transition-transform duration-500"
           style={{ transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)` }}
         ></div>
         <div 
-          className="absolute bottom-20 left-20 w-48 h-48 bg-primary/5 rounded-full blur-2xl animate-float transition-transform duration-500" 
+          className="absolute bottom-10 md:bottom-20 left-10 md:left-20 w-32 md:w-48 h-32 md:h-48 bg-primary/5 rounded-full blur-2xl animate-float transition-transform duration-500"
           style={{ animationDelay: '2s', transform: `translate(${-mousePosition.x * 0.3}px, ${-mousePosition.y * 0.3}px)` }}
         ></div>
         <div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-primary/5 rounded-full blur-lg animate-glow-pulse transition-transform duration-500" 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 md:w-56 h-40 md:h-56 bg-primary/5 rounded-full blur-lg animate-glow-pulse transition-transform duration-500"
           style={{ animationDelay: '1s', transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)` }}
         ></div>
         
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass-card rounded-2xl p-8 shadow-elegant transform-gpu">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center animate-fade-in-up group-hover:scale-105 transition-all duration-500 bg-gradient-to-r from-primary via-white to-primary bg-clip-text hover:text-transparent">
+        <div className="w-full max-w-md relative z-10 px-4 sm:px-0">
+          <div className="glass-card rounded-2xl p-6 sm:p-8 shadow-elegant transform-gpu">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center animate-fade-in-up group-hover:scale-105 transition-all duration-500 bg-gradient-to-r from-primary via-white to-primary bg-clip-text hover:text-transparent">
               {showForgotPassword ? "Reset Password" : "Get Started"}
             </h2>
 
@@ -136,16 +136,16 @@ const Auth = () => {
               <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
             ) : (
               <Tabs defaultValue="login" className="w-full animate-scale-in">
-                <TabsList className="grid w-full grid-cols-2 mb-8 glass-card transition-all duration-300 hover:border-primary/50">
+                <TabsList className="grid w-full grid-cols-2 mb-6 sm:mb-8 glass-card transition-all duration-300 hover:border-primary/50 h-12 sm:h-auto">
                   <TabsTrigger 
                     value="login" 
-                    className="transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
+                    className="text-sm sm:text-base transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
                   >
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger 
                     value="signup" 
-                    className="transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
+                    className="text-sm sm:text-base transition-all duration-300 hover:scale-105 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-glow data-[state=active]:text-primary-foreground data-[state=active]:neon-glow"
                   >
                     Sign Up
                   </TabsTrigger>
@@ -163,7 +163,7 @@ const Auth = () => {
           </div>
 
           {/* Terms & Privacy */}
-          <div className="text-center text-xs lg:text-sm text-white/60 mt-6 animate-fade-in delay-400">
+          <div className="text-center text-xs sm:text-sm text-white/60 mt-4 sm:mt-6 animate-fade-in delay-400 px-4">
             <p>
               By continuing, you agree to our{" "}
               <a 
