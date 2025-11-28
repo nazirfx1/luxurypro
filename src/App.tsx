@@ -17,6 +17,8 @@ import PropertyOwnerDashboard from "./pages/dashboards/PropertyOwnerDashboard";
 import TenantDashboard from "./pages/dashboards/TenantDashboard";
 import SupportStaffDashboard from "./pages/dashboards/SupportStaffDashboard";
 import AccountantDashboard from "./pages/dashboards/AccountantDashboard";
+import TenantDashboardPage from "./pages/dashboards/TenantDashboardPage";
+import OwnerDashboardPage from "./pages/dashboards/OwnerDashboardPage";
 import PropertiesList from "./pages/properties/PropertiesList";
 import PropertiesListPublic from "./pages/properties/PropertiesListPublic";
 import PropertyForm from "./pages/properties/PropertyForm";
@@ -300,6 +302,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <LeasesList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tenant/dashboard"
+              element={
+                <ProtectedRoute>
+                  <TenantDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/owner/dashboard"
+              element={
+                <ProtectedRoute>
+                  <OwnerDashboardPage />
                 </ProtectedRoute>
               }
             />
