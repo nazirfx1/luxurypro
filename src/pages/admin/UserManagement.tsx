@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -259,15 +260,16 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <PageHeader
-        title="User Management"
-        description="Manage users and their roles across the system"
-        breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "User Management" },
-        ]}
-      />
+    <DashboardLayout>
+      <div className="space-y-6">
+        <PageHeader
+          title="User Management"
+          description="Manage users and their roles across the system"
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "User Management" },
+          ]}
+        />
 
       {/* Search and Actions */}
       <div className="flex items-center gap-4">
@@ -440,6 +442,7 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
