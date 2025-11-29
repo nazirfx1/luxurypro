@@ -126,27 +126,17 @@ const PropertyHighlights = () => {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-background relative overflow-hidden" ref={ref}>
-      {/* Parallax background effect */}
+    <section className="py-20 md:py-32 bg-primary relative overflow-hidden" ref={ref}>
+      {/* Subtle pattern overlay */}
       <motion.div 
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-10"
         style={{
-          background: "radial-gradient(circle at 30% 50%, hsl(var(--primary) / 0.05) 0%, transparent 60%)",
+          backgroundImage: "radial-gradient(circle at 20px 20px, hsl(0 0% 0% / 0.1) 2px, transparent 0)",
+          backgroundSize: "40px 40px",
         }}
-        initial={{ scale: 1.2, opacity: 0 }}
-        animate={isInView ? { 
-          scale: 1, 
-          opacity: 0.2,
-          y: [0, -20, 0]
-        } : { scale: 1.2, opacity: 0 }}
-        transition={{ 
-          duration: 1.5,
-          y: {
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }
-        }}
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 0.1 } : { opacity: 0 }}
+        transition={{ duration: 1 }}
       />
 
       <div className="container px-4 relative z-10">
@@ -157,20 +147,20 @@ const PropertyHighlights = () => {
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           <motion.h2 
-            className="text-3xl md:text-5xl font-bold text-foreground"
+            className="text-3xl md:text-5xl font-bold text-background"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
             Featured <motion.span 
-              className="text-primary"
+              className="text-foreground"
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >Properties</motion.span>
           </motion.h2>
           <motion.p 
-            className="text-lg text-muted-foreground max-w-2xl mx-auto"
+            className="text-lg text-background/90 max-w-2xl mx-auto font-medium"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
@@ -183,18 +173,18 @@ const PropertyHighlights = () => {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <Card key={i} className="overflow-hidden animate-pulse">
-                <div className="aspect-[4/3] bg-muted" />
+              <Card key={i} className="overflow-hidden animate-pulse bg-background border-background/20">
+                <div className="aspect-[4/3] bg-muted/20" />
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    <div className="h-6 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="h-6 bg-muted/20 rounded w-3/4" />
+                    <div className="h-4 bg-muted/20 rounded w-1/2" />
                     <div className="flex gap-4">
-                      <div className="h-4 bg-muted rounded w-16" />
-                      <div className="h-4 bg-muted rounded w-16" />
-                      <div className="h-4 bg-muted rounded w-16" />
+                      <div className="h-4 bg-muted/20 rounded w-16" />
+                      <div className="h-4 bg-muted/20 rounded w-16" />
+                      <div className="h-4 bg-muted/20 rounded w-16" />
                     </div>
-                    <div className="h-8 bg-muted rounded w-24" />
+                    <div className="h-8 bg-muted/20 rounded w-24" />
                   </div>
                 </CardContent>
               </Card>
@@ -223,23 +213,23 @@ const PropertyHighlights = () => {
             <CarouselContent>
               {properties.map((property) => (
                 <CarouselItem key={property.id}>
-                  <Card className="overflow-hidden border-border">
-                    <Link to={`/properties/${property.id}`}>
-                      <div className="relative overflow-hidden aspect-[4/3]">
+                  <Card className="overflow-hidden border-background/20 bg-background shadow-lg">
+                    <div className="relative overflow-hidden aspect-[4/3]">
+                      <Link to={`/properties/${property.id}`}>
                         <img 
                           src={property.property_media[0]?.media_url || "/placeholder.svg"} 
                           alt={property.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                           loading="lazy"
                         />
-                        <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold z-10">
-                          Featured
-                        </span>
-                      </div>
+                      </Link>
+                      <span className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 rounded-full text-sm font-bold z-10">
+                        Featured
+                      </span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+                        className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm hover:bg-background z-10"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -254,11 +244,11 @@ const PropertyHighlights = () => {
                           }`} 
                         />
                       </Button>
-                    </Link>
-                    <CardContent className="p-6">
+                    </div>
+                    <CardContent className="p-6 bg-background">
                       <div className="space-y-4">
                         <div>
-                          <h3 className="text-xl font-semibold text-foreground mb-2">
+                          <h3 className="text-xl font-bold text-foreground mb-2">
                             {property.title}
                           </h3>
                           <div className="flex items-center gap-1 text-muted-foreground mb-2">
@@ -294,10 +284,12 @@ const PropertyHighlights = () => {
                         </div>
 
                         <div className="flex items-center justify-between pt-4 border-t border-border">
-                          <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
-                          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
-                            View Details
-                          </button>
+                          <span className="text-2xl font-bold text-foreground">{formatPrice(property.price)}</span>
+                          <Link to={`/properties/${property.id}`}>
+                            <button className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-bold hover:bg-foreground/90 transition-colors">
+                              View Details
+                            </button>
+                          </Link>
                         </div>
                       </div>
                     </CardContent>
@@ -305,8 +297,8 @@ const PropertyHighlights = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious className="bg-background text-foreground border-background/20 hover:bg-background/90" />
+            <CarouselNext className="bg-background text-foreground border-background/20 hover:bg-background/90" />
           </Carousel>
           </div>
         )}
