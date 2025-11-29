@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Square, Heart, Calendar, TrendingUp, Home as HomeIcon } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Heart, Calendar, TrendingUp, Home as HomeIcon, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SharePropertyDialog } from "@/components/properties/SharePropertyDialog";
+import PropertyGalleryModal from "./PropertyGalleryModal";
 
 interface PropertyFlipCardProps {
   property: {
@@ -36,7 +37,9 @@ const PropertyFlipCard = ({
   badge = "Featured" 
 }: PropertyFlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const hasImage = property.property_media && property.property_media.length > 0;
+  const images = property.property_media?.map(m => m.media_url) || [];
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -46,8 +49,25 @@ const PropertyFlipCard = ({
     }).format(price);
   };
 
+  const handleImageClick = (e: React.MouseEvent) => {
+    if (images.length > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsGalleryOpen(true);
+    }
+  };
+
   return (
-    <motion.div
+    <>
+      <PropertyGalleryModal
+        images={images}
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        initialIndex={0}
+        propertyTitle={property.title}
+      />
+      
+      <motion.div
       className="relative h-[500px] perspective-1000"
       onHoverStart={() => setIsFlipped(true)}
       onHoverEnd={() => setIsFlipped(false)}
@@ -87,14 +107,37 @@ const PropertyFlipCard = ({
                 transition={{ duration: 0.4 }}
               />
 
-              <div className="relative overflow-hidden aspect-[4/3] bg-muted">
+              <div className="relative overflow-hidden aspect-[4/3] bg-muted group/image">
                 {hasImage ? (
-                  <motion.img 
-                    src={property.property_media[0].media_url} 
-                    alt={property.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+                  <>
+                    <div 
+                      className="w-full h-full cursor-pointer"
+                      onClick={handleImageClick}
+                    >
+                      <motion.img 
+                        src={property.property_media[0].media_url} 
+                        alt={property.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    {/* Gallery Icon Overlay */}
+                    <motion.div
+                      className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                      onClick={handleImageClick}
+                    >
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        whileHover={{ scale: 1, opacity: 1 }}
+                        className="bg-white/20 backdrop-blur-sm rounded-full p-4"
+                      >
+                        <ImageIcon className="w-8 h-8 text-white" />
+                      </motion.div>
+                      <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm font-medium">
+                        {images.length} {images.length === 1 ? 'Photo' : 'Photos'}
+                      </div>
+                    </motion.div>
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <HomeIcon className="w-16 h-16 text-muted-foreground/30" />
@@ -329,6 +372,7 @@ const PropertyFlipCard = ({
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 };
 

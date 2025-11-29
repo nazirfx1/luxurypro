@@ -19,6 +19,7 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
+  Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
@@ -27,6 +28,7 @@ import BookVisitDialog from "@/components/properties/BookVisitDialog";
 import { BookPropertyDialog } from "@/components/properties/BookPropertyDialog";
 import PropertyAmenities from "@/components/properties/PropertyAmenities";
 import SimilarProperties from "@/components/properties/SimilarProperties";
+import PropertyGalleryModal from "@/components/properties/PropertyGalleryModal";
 
 const PropertyDetailPublic = () => {
   const { id } = useParams();
@@ -36,6 +38,7 @@ const PropertyDetailPublic = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [user, setUser] = useState<any>(null);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -203,9 +206,19 @@ const PropertyDetailPublic = () => {
     ? [...property.property_media].sort((a: any, b: any) => a.display_order - b.display_order)
     : [];
 
+  const propertyImages = sortedImages.map((img: any) => img.media_url);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      <PropertyGalleryModal
+        images={propertyImages}
+        isOpen={isGalleryOpen}
+        onClose={() => setIsGalleryOpen(false)}
+        initialIndex={currentImageIndex}
+        propertyTitle={property.title}
+      />
       
       <div className="container mx-auto px-4 py-8 mt-20">
         {/* Header */}
@@ -232,13 +245,29 @@ const PropertyDetailPublic = () => {
         {/* Image Gallery */}
         {sortedImages.length > 0 && (
           <div className="mb-8">
-            <div className="relative h-[500px] rounded-2xl overflow-hidden group">
+            <div 
+              className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer"
+              onClick={() => setIsGalleryOpen(true)}
+            >
               <img
                 src={sortedImages[currentImageIndex]?.media_url}
                 alt={property.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              
+              {/* Fullscreen Button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-smooth bg-black/60 hover:bg-black/80 border-white/20 text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsGalleryOpen(true);
+                }}
+              >
+                <Maximize2 className="w-5 h-5" />
+              </Button>
               
               {sortedImages.length > 1 && (
                 <>
