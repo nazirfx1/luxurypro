@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { SharePropertyDialog } from "@/components/properties/SharePropertyDialog";
+import PropertyFlipCard from "@/components/properties/PropertyFlipCard";
 import {
   Select,
   SelectContent,
@@ -34,6 +35,9 @@ interface Property {
   bedrooms: number | null;
   bathrooms: number | null;
   square_feet: number | null;
+  property_type: string | null;
+  year_built: number | null;
+  listing_type: string | null;
   property_media: Array<{ media_url: string }>;
 }
 
@@ -53,7 +57,7 @@ const LatestProperties = () => {
       
       let query = supabase
         .from("properties")
-        .select("id, title, description, city, state, price, bedrooms, bathrooms, square_feet, property_media(media_url)")
+        .select("id, title, description, city, state, price, bedrooms, bathrooms, square_feet, property_type, year_built, listing_type, property_media(media_url)")
         .eq("status", "active");
 
       // Apply sorting
@@ -272,166 +276,23 @@ const LatestProperties = () => {
           </Select>
         </motion.div>
 
-        {/* Desktop Grid - Show all properties */}
+        {/* Desktop Grid with 3D Flip Cards */}
         <motion.div 
           className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
         >
-          {properties.map((property, index) => {
-            const hasImage = property.property_media && property.property_media.length > 0;
-            
-            return (
-            <motion.div
+          {properties.map((property, index) => (
+            <PropertyFlipCard
               key={property.id}
-              variants={cardVariants}
-              whileHover={{ 
-                y: -10,
-                scale: 1.03,
-                transition: { duration: 0.3, ease: "easeOut" }
-              }}
-            >
-              <Link to={`/properties/${property.id}`}>
-                <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10 relative">
-                  {/* Gradient overlay on hover */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 z-10 pointer-events-none"
-                    transition={{ duration: 0.4 }}
-                  />
-
-                  <div className="relative overflow-hidden aspect-[4/3] bg-muted">
-                    {hasImage ? (
-                      <motion.img 
-                        src={property.property_media[0].media_url} 
-                        alt={property.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        whileHover={{ scale: 1.12 }}
-                        transition={{ duration: 0.7, ease: "easeOut" }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Home className="w-16 h-16 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    {hasImage && (
-                      <>
-                        <motion.div 
-                          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
-                          initial={{ opacity: 0.5 }}
-                          whileHover={{ opacity: 1 }}
-                          transition={{ duration: 0.4 }}
-                        />
-                        <motion.span 
-                          className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
-                          initial={{ opacity: 0, x: -15 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 + index * 0.08 }}
-                          whileHover={{ 
-                            scale: 1.08,
-                            boxShadow: "0 0 15px hsl(var(--primary) / 0.6)"
-                          }}
-                        >
-                          Active
-                        </motion.span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleFavorite(property.id);
-                          }}
-                        >
-                          <Heart 
-                            className={`w-5 h-5 transition-all ${
-                              isFavorite(property.id) 
-                                ? 'fill-primary text-primary' 
-                                : 'text-foreground'
-                            }`} 
-                          />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                            {property.title}
-                          </h3>
-                          <div className="flex items-center gap-1 text-muted-foreground mb-2">
-                            <MapPin className="w-4 h-4 flex-shrink-0" />
-                            <span className="text-sm">{property.city}, {property.state}</span>
-                          </div>
-                        </div>
-                        <SharePropertyDialog
-                          propertyId={property.id}
-                          propertyTitle={property.title}
-                          propertyPrice={property.price}
-                          propertyImage={property.property_media[0]?.media_url}
-                        />
-                      </div>
-                      {property.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {property.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {property.bedrooms && (
-                          <div className="flex items-center gap-1">
-                            <Bed className="w-4 h-4" />
-                            <span>{property.bedrooms}</span>
-                          </div>
-                        )}
-                        {property.bathrooms && (
-                          <div className="flex items-center gap-1">
-                            <Bath className="w-4 h-4" />
-                            <span>{property.bathrooms}</span>
-                          </div>
-                        )}
-                        {property.square_feet && (
-                          <div className="flex items-center gap-1">
-                            <Square className="w-4 h-4" />
-                            <span>{property.square_feet} sqft</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <motion.span 
-                          className="text-2xl font-bold text-primary"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.3 + index * 0.08 }}
-                        >
-                          {formatPrice(property.price)}
-                        </motion.span>
-                        <motion.button
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors relative overflow-hidden group/btn"
-                          whileHover={{ 
-                            scale: 1.05,
-                            boxShadow: "0 6px 24px hsl(var(--primary) / 0.3)"
-                          }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover/btn:opacity-100"
-                            transition={{ duration: 0.3 }}
-                          />
-                          <span className="relative z-10">View Details</span>
-                        </motion.button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-            );
-          })}
+              property={property}
+              isFavorite={isFavorite(property.id)}
+              onToggleFavorite={toggleFavorite}
+              index={index}
+              badge="Active"
+            />
+          ))}
         </motion.div>
 
         {/* Mobile Carousel */}
