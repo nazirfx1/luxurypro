@@ -25,6 +25,25 @@ export const PropertyOccupancyWidget = () => {
     };
 
     loadOccupancy();
+
+    // Real-time subscriptions for both properties and leases
+    const channel = supabase
+      .channel("property-occupancy-widget")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        loadOccupancy
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "leases" },
+        loadOccupancy
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (loading) {

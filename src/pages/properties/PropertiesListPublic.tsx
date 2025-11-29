@@ -40,6 +40,25 @@ const PropertiesListPublic = () => {
 
   useEffect(() => {
     fetchProperties();
+
+    // Real-time subscription for properties
+    const channel = supabase
+      .channel("properties-public-list")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        () => fetchProperties()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "property_media" },
+        () => fetchProperties()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [searchTerm, propertyType, priceRange, currentPage]);
 
   const fetchProperties = async () => {

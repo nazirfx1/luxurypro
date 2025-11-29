@@ -30,6 +30,25 @@ const SimilarProperties = ({ currentPropertyId, propertyType, city }: SimilarPro
 
   useEffect(() => {
     fetchSimilarProperties();
+
+    // Real-time subscription for similar properties
+    const channel = supabase
+      .channel(`similar-properties-${currentPropertyId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        fetchSimilarProperties
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "property_media" },
+        fetchSimilarProperties
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [currentPropertyId, propertyType, city]);
 
   const fetchSimilarProperties = async () => {
