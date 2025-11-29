@@ -1,11 +1,64 @@
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
+
+const menuItems = [
+  { name: "Features", id: "features" },
+  { name: "Properties", id: "properties" },
+  { name: "How It Works", id: "how-it-works" },
+  { name: "Testimonials", id: "testimonials" },
+  { name: "Blog", id: "blog" }
+];
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const location = useLocation();
+
+  // Scroll spy to detect active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100; // Offset for navbar height
+      
+      for (const item of menuItems) {
+        const section = document.getElementById(item.id);
+        if (section) {
+          const sectionTop = section.offsetTop;
+          const sectionBottom = sectionTop + section.offsetHeight;
+          
+          if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+            setActiveSection(item.id);
+            break;
+          }
+        }
+      }
+    };
+
+    // Only add scroll listener on the landing page
+    if (location.pathname === "/") {
+      window.addEventListener("scroll", handleScroll);
+      handleScroll(); // Check initial position
+      
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, [location.pathname]);
+
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const navbarHeight = 80; // Height of fixed navbar
+      const sectionTop = section.offsetTop - navbarHeight;
+      
+      window.scrollTo({
+        top: sectionTop,
+        behavior: "smooth"
+      });
+    }
+    setIsMenuOpen(false);
+  };
 
   return (
     <motion.nav 
@@ -27,22 +80,30 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {["Features", "Properties", "How It Works", "Testimonials", "Blog"].map((item, index) => (
-              <motion.a 
-                key={item}
-                href={`#${item.toLowerCase().replace(/\s+/g, '-')}`} 
-                className="text-sm font-medium text-foreground hover:text-primary transition-colors relative group"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 * index }}
-                whileHover={{ y: -2 }}
-              >
-                {item}
-                <motion.span
-                  className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"
-                />
-              </motion.a>
-            ))}
+            {menuItems.map((item, index) => {
+              const isActive = activeSection === item.id;
+              
+              return (
+                <motion.button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`text-sm font-medium transition-colors relative group ${
+                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  }`}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.1 * index }}
+                  whileHover={{ y: -2 }}
+                >
+                  {item.name}
+                  <span
+                    className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
+                      isActive ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                  />
+                </motion.button>
+              );
+            })}
           </div>
 
           {/* CTA Buttons */}
@@ -95,41 +156,21 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <a 
-              href="#features" 
-              className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Features
-            </a>
-            <a 
-              href="#properties" 
-              className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Properties
-            </a>
-            <a 
-              href="#how-it-works" 
-              className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              How It Works
-            </a>
-            <a 
-              href="#testimonials" 
-              className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Testimonials
-            </a>
-            <a 
-              href="#blog" 
-              className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Blog
-            </a>
+            {menuItems.map((item) => {
+              const isActive = activeSection === item.id;
+              
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`block w-full text-left py-2 text-sm font-medium transition-colors ${
+                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  }`}
+                >
+                  {item.name}
+                </button>
+              );
+            })}
             <div className="flex flex-col space-y-2 pt-4">
               <Button 
                 variant="ghost" 
