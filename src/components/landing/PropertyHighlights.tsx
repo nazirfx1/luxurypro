@@ -1,10 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Square, Star } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Button } from "@/components/ui/button";
 import {
   Carousel,
   CarouselContent,
@@ -31,6 +33,7 @@ const PropertyHighlights = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     const fetchFeaturedProperties = async () => {
@@ -142,26 +145,45 @@ const PropertyHighlights = () => {
               <Link to={`/properties/${property.id}`}>
                 <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10">
                   <div className="relative overflow-hidden aspect-[4/3]">
-                    <motion.img 
-                      src={property.property_media[0]?.media_url || "/placeholder.svg"} 
-                      alt={property.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.6 }}
-                    />
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0"
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    />
+                    <Link to={`/properties/${property.id}`}>
+                      <motion.img 
+                        src={property.property_media[0]?.media_url || "/placeholder.svg"} 
+                        alt={property.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.6 }}
+                      />
+                      <motion.div 
+                        className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0"
+                        initial={{ opacity: 0 }}
+                        whileHover={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </Link>
                     <motion.span 
                       className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
                       whileHover={{ scale: 1.05 }}
                     >
                       Featured
                     </motion.span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleFavorite(property.id);
+                      }}
+                    >
+                      <Heart 
+                        className={`w-5 h-5 transition-all ${
+                          isFavorite(property.id) 
+                            ? 'fill-primary text-primary' 
+                            : 'text-foreground'
+                        }`} 
+                      />
+                    </Button>
                   </div>
                   <CardContent className="p-6">
                     <div className="space-y-4">
@@ -231,15 +253,34 @@ const PropertyHighlights = () => {
                   <Link to={`/properties/${property.id}`}>
                     <Card className="overflow-hidden border-border">
                       <div className="relative overflow-hidden aspect-[4/3]">
-                        <img 
-                          src={property.property_media[0]?.media_url || "/placeholder.svg"} 
-                          alt={property.title}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
+                        <Link to={`/properties/${property.id}`}>
+                          <img 
+                            src={property.property_media[0]?.media_url || "/placeholder.svg"} 
+                            alt={property.title}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </Link>
                         <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                           Featured
                         </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleFavorite(property.id);
+                          }}
+                        >
+                          <Heart 
+                            className={`w-5 h-5 transition-all ${
+                              isFavorite(property.id) 
+                                ? 'fill-primary text-primary' 
+                                : 'text-foreground'
+                            }`} 
+                          />
+                        </Button>
                       </div>
                       <CardContent className="p-6">
                         <div className="space-y-4">
