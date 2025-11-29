@@ -176,32 +176,92 @@ const LatestProperties = () => {
     );
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.4
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 60,
+      scale: 0.95
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94] as any
+      }
+    }
+  };
+
   return (
-    <section className="py-20 md:py-32 bg-background" ref={ref}>
-      <div className="container px-4">
+    <section className="py-20 md:py-32 bg-background relative overflow-hidden" ref={ref}>
+      {/* Subtle animated mesh gradient */}
+      <motion.div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          background: "radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.08) 0%, transparent 50%)",
+        }}
+        animate={{
+          scale: [1, 1.1, 1],
+          rotate: [0, 5, 0],
+        }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      />
+
+      <div className="container px-4 relative z-10">
         <motion.div 
           className="text-center mb-12 space-y-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-            Latest <span className="text-primary">Properties</span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <motion.h2 
+            className="text-3xl md:text-5xl font-bold text-foreground"
+            initial={{ opacity: 0, letterSpacing: "0.1em" }}
+            animate={isInView ? { opacity: 1, letterSpacing: "normal" } : { opacity: 0, letterSpacing: "0.1em" }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+          >
+            Latest <motion.span 
+              className="text-primary"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >Properties</motion.span>
+          </motion.h2>
+          <motion.p 
+            className="text-lg text-muted-foreground max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
             Discover our handpicked selection of premium properties
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Sorting Controls */}
         <motion.div
           className="flex justify-center mb-8"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
         >
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[200px] border-border bg-background">
+            <SelectTrigger className="w-[200px] border-border bg-background hover:border-primary/50 transition-colors">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -213,19 +273,33 @@ const LatestProperties = () => {
         </motion.div>
 
         {/* Desktop Grid - Show all properties */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <motion.div 
+          className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+        >
           {properties.map((property, index) => {
             const hasImage = property.property_media && property.property_media.length > 0;
             
             return (
             <motion.div
               key={property.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              variants={cardVariants}
+              whileHover={{ 
+                y: -10,
+                scale: 1.03,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
             >
               <Link to={`/properties/${property.id}`}>
-                <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10">
+                <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10 relative">
+                  {/* Gradient overlay on hover */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 z-10 pointer-events-none"
+                    transition={{ duration: 0.4 }}
+                  />
+
                   <div className="relative overflow-hidden aspect-[4/3] bg-muted">
                     {hasImage ? (
                       <motion.img 
@@ -233,8 +307,8 @@ const LatestProperties = () => {
                         alt={property.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.6 }}
+                        whileHover={{ scale: 1.12 }}
+                        transition={{ duration: 0.7, ease: "easeOut" }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -244,14 +318,20 @@ const LatestProperties = () => {
                     {hasImage && (
                       <>
                         <motion.div 
-                          className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0"
-                          initial={{ opacity: 0 }}
+                          className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                          initial={{ opacity: 0.5 }}
                           whileHover={{ opacity: 1 }}
-                          transition={{ duration: 0.3 }}
+                          transition={{ duration: 0.4 }}
                         />
                         <motion.span 
                           className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
-                          whileHover={{ scale: 1.05 }}
+                          initial={{ opacity: 0, x: -15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + index * 0.08 }}
+                          whileHover={{ 
+                            scale: 1.08,
+                            boxShadow: "0 0 15px hsl(var(--primary) / 0.6)"
+                          }}
                         >
                           Active
                         </motion.span>
@@ -322,13 +402,27 @@ const LatestProperties = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
-                        <motion.button
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                        <motion.span 
+                          className="text-2xl font-bold text-primary"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.3 + index * 0.08 }}
                         >
-                          View Details
+                          {formatPrice(property.price)}
+                        </motion.span>
+                        <motion.button
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors relative overflow-hidden group/btn"
+                          whileHover={{ 
+                            scale: 1.05,
+                            boxShadow: "0 6px 24px hsl(var(--primary) / 0.3)"
+                          }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover/btn:opacity-100"
+                            transition={{ duration: 0.3 }}
+                          />
+                          <span className="relative z-10">View Details</span>
                         </motion.button>
                       </div>
                     </div>
@@ -336,9 +430,9 @@ const LatestProperties = () => {
                 </Card>
               </Link>
             </motion.div>
-          );
+            );
           })}
-        </div>
+        </motion.div>
 
         {/* Mobile Carousel */}
         <div className="md:hidden">

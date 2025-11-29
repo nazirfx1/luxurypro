@@ -93,21 +93,86 @@ const PropertyHighlights = () => {
     return null;
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 60,
+      scale: 0.9
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1] as any
+      }
+    }
+  };
+
   return (
-    <section className="py-20 md:py-32 bg-background" ref={ref}>
-      <div className="container px-4">
+    <section className="py-20 md:py-32 bg-background relative overflow-hidden" ref={ref}>
+      {/* Parallax background effect */}
+      <motion.div 
+        className="absolute inset-0 opacity-20"
+        style={{
+          background: "radial-gradient(circle at 30% 50%, hsl(var(--primary) / 0.05) 0%, transparent 60%)",
+        }}
+        initial={{ scale: 1.2, opacity: 0 }}
+        animate={isInView ? { 
+          scale: 1, 
+          opacity: 0.2,
+          y: [0, -20, 0]
+        } : { scale: 1.2, opacity: 0 }}
+        transition={{ 
+          duration: 1.5,
+          y: {
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }
+        }}
+      />
+
+      <div className="container px-4 relative z-10">
         <motion.div 
           className="text-center mb-16 space-y-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-            Featured <span className="text-primary">Properties</span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <motion.h2 
+            className="text-3xl md:text-5xl font-bold text-foreground"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            Featured <motion.span 
+              className="text-primary"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >Properties</motion.span>
+          </motion.h2>
+          <motion.p 
+            className="text-lg text-muted-foreground max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+          >
             Handpicked luxury properties in prime locations
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Loading State */}
@@ -135,16 +200,32 @@ const PropertyHighlights = () => {
 
         {/* Desktop Grid */}
         {!loading && properties.length > 0 && (
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div 
+            className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
           {properties.map((property, index) => (
             <motion.div
               key={property.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              variants={cardVariants}
+              whileHover={{ 
+                y: -12,
+                scale: 1.02,
+                transition: { duration: 0.3, ease: "easeOut" }
+              }}
             >
               <Link to={`/properties/${property.id}`}>
-                <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10">
+                <Card className="group overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer hover:shadow-elegant hover:shadow-primary/10 relative">
+                  {/* Animated shine effect on hover */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent z-10 pointer-events-none"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                  />
+                  
                   <div className="relative overflow-hidden aspect-[4/3]">
                     <Link to={`/properties/${property.id}`}>
                       <motion.img 
@@ -152,19 +233,25 @@ const PropertyHighlights = () => {
                         alt={property.title}
                         className="w-full h-full object-cover"
                         loading="lazy"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.6 }}
+                        whileHover={{ scale: 1.15 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                       />
                       <motion.div 
-                        className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0"
-                        initial={{ opacity: 0 }}
+                        className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                        initial={{ opacity: 0.6 }}
                         whileHover={{ opacity: 1 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.4 }}
                       />
                     </Link>
                     <motion.span 
                       className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
-                      whileHover={{ scale: 1.05 }}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 + index * 0.1 }}
+                      whileHover={{ 
+                        scale: 1.1,
+                        boxShadow: "0 0 20px hsl(var(--primary) / 0.5)"
+                      }}
                     >
                       Featured
                     </motion.span>
@@ -233,13 +320,29 @@ const PropertyHighlights = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-border">
-                        <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                        <motion.span 
+                          className="text-2xl font-bold text-primary"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 + index * 0.1 }}
+                        >
+                          {formatPrice(property.price)}
+                        </motion.span>
                         <motion.button
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
-                          whileHover={{ scale: 1.05 }}
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors relative overflow-hidden"
+                          whileHover={{ 
+                            scale: 1.05,
+                            boxShadow: "0 4px 20px hsl(var(--primary) / 0.4)"
+                          }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          View Details
+                          <motion.span
+                            className="absolute inset-0 bg-primary-glow"
+                            initial={{ x: "-100%" }}
+                            whileHover={{ x: "100%" }}
+                            transition={{ duration: 0.5 }}
+                          />
+                          <span className="relative z-10">View Details</span>
                         </motion.button>
                       </div>
                     </div>
@@ -248,7 +351,7 @@ const PropertyHighlights = () => {
               </Link>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         )}
 
