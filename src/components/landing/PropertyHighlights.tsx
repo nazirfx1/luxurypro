@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Square, Heart } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Heart, Home as HomeIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
@@ -30,6 +30,9 @@ interface Property {
   property_type: string | null;
   year_built: number | null;
   listing_type: string | null;
+  is_featured: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
   property_media: Array<{ media_url: string }>;
 }
 
@@ -41,43 +44,90 @@ const PropertyHighlights = () => {
   const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
-    const fetchFeaturedProperties = async () => {
-      console.log('Fetching featured properties...');
-      const { data, error } = await supabase
-        .from("properties")
-        .select("id, title, description, city, state, price, bedrooms, bathrooms, square_feet, property_type, year_built, listing_type, property_media(media_url)")
-        .eq("status", "active")
-        .eq("is_featured", true)
-        .order("updated_at", { ascending: false })
-        .limit(10);
+    const fetchProperties = async () => {
+      try {
+        console.log('🔄 Fetching properties...');
+        
+        const { data, error } = await supabase
+          .from("properties")
+          .select(`
+            id, 
+            title, 
+            description, 
+            city, 
+            state, 
+            price, 
+            bedrooms, 
+            bathrooms, 
+            square_feet, 
+            property_type, 
+            year_built, 
+            listing_type,
+            is_featured,
+            created_at,
+            updated_at,
+            property_media(media_url)
+          `)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(12);
 
-      console.log('Featured properties data:', data);
-      console.log('Featured properties error:', error);
+        if (error) {
+          console.error('❌ Error fetching properties:', error);
+          setLoading(false);
+          return;
+        }
 
-      if (!error && data) {
-        setProperties(data as Property[]);
+        console.log('✅ Properties fetched successfully:', data?.length || 0, 'properties');
+        console.log('📦 Properties data:', data);
+        
+        if (data && data.length > 0) {
+          setProperties(data as Property[]);
+        } else {
+          console.warn('⚠️ No properties found in database');
+          setProperties([]);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('💥 Exception while fetching properties:', err);
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchFeaturedProperties();
+    fetchProperties();
 
-    // Realtime subscription
+    // Real-time subscription for instant updates
+    console.log('🔌 Setting up real-time subscriptions...');
     const channel = supabase
-      .channel("featured-properties-landing")
+      .channel("properties-realtime-updates")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "properties" },
-        fetchFeaturedProperties
+        { 
+          event: "*", 
+          schema: "public", 
+          table: "properties",
+          filter: "status=eq.active"
+        },
+        (payload) => {
+          console.log('🔔 Real-time update - properties table:', payload.eventType);
+          fetchProperties();
+        }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "property_media" },
-        fetchFeaturedProperties
+        (payload) => {
+          console.log('🔔 Real-time update - property_media table:', payload.eventType);
+          fetchProperties();
+        }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Subscription status:', status);
+      });
 
     return () => {
+      console.log('🔌 Cleaning up real-time subscriptions...');
       supabase.removeChannel(channel);
     };
   }, []);
@@ -91,7 +141,7 @@ const PropertyHighlights = () => {
   };
 
   // Always render the section, show loading or empty state as needed
-  const shouldShowSection = loading || properties.length > 0;
+  const shouldShowSection = true; // Always show the section
 
   if (!shouldShowSection) {
     return null;
@@ -138,6 +188,28 @@ const PropertyHighlights = () => {
         animate={isInView ? { opacity: 0.1 } : { opacity: 0 }}
         transition={{ duration: 1 }}
       />
+        
+        {/* Empty State */}
+        {!loading && properties.length === 0 && (
+          <div className="text-center py-20">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-background/20 flex items-center justify-center">
+                <HomeIcon className="w-12 h-12 text-background/60" />
+              </div>
+              <h3 className="text-2xl font-bold text-background mb-3">
+                No Properties Available
+              </h3>
+              <p className="text-background/80 mb-6">
+                We're currently updating our listings. Check back soon for amazing properties!
+              </p>
+              <Link to="/properties">
+                <Button className="bg-foreground text-background hover:bg-foreground/90 font-bold">
+                  Browse All Listings
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
       <div className="container px-4 relative z-10">
         <motion.div 
@@ -202,7 +274,7 @@ const PropertyHighlights = () => {
                 isFavorite={isFavorite(property.id)}
                 onToggleFavorite={toggleFavorite}
                 index={index}
-                badge="Featured"
+                badge={property.is_featured ? "Featured" : "New"}
               />
             ))}
           </div>
@@ -211,7 +283,9 @@ const PropertyHighlights = () => {
           <div className="md:hidden">
           <Carousel className="w-full">
             <CarouselContent>
-              {properties.map((property) => (
+              {properties.map((property) => {
+                const propertyBadge = property.is_featured ? "Featured" : "New";
+                return (
                 <CarouselItem key={property.id}>
                   <Card className="overflow-hidden border-background/20 bg-background shadow-lg">
                     <div className="relative overflow-hidden aspect-[4/3]">
@@ -224,7 +298,7 @@ const PropertyHighlights = () => {
                         />
                       </Link>
                       <span className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 rounded-full text-sm font-bold z-10">
-                        Featured
+                        {propertyBadge}
                       </span>
                       <Button
                         variant="ghost"
@@ -295,7 +369,8 @@ const PropertyHighlights = () => {
                     </CardContent>
                   </Card>
                 </CarouselItem>
-              ))}
+              );
+              })}
             </CarouselContent>
             <CarouselPrevious className="bg-background text-foreground border-background/20 hover:bg-background/90" />
             <CarouselNext className="bg-background text-foreground border-background/20 hover:bg-background/90" />
