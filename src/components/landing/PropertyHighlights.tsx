@@ -179,20 +179,20 @@ const PropertyHighlights = () => {
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
           <motion.h2 
-            className="text-3xl md:text-5xl font-bold text-background"
+            className="text-3xl md:text-5xl font-bold text-foreground"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
             Featured <motion.span 
-              className="text-foreground"
+              className="text-background"
               initial={{ opacity: 0 }}
               animate={isInView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >Properties</motion.span>
           </motion.h2>
           <motion.p 
-            className="text-lg text-background/90 max-w-2xl mx-auto font-medium"
+            className="text-lg text-foreground/90 max-w-2xl mx-auto font-medium"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
@@ -242,17 +242,17 @@ const PropertyHighlights = () => {
         {!loading && !error && properties.length === 0 && (
           <div className="text-center py-20">
             <div className="max-w-md mx-auto">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-background/20 flex items-center justify-center">
-                <HomeIcon className="w-12 h-12 text-background/60" />
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-foreground/20 flex items-center justify-center">
+                <HomeIcon className="w-12 h-12 text-foreground/60" />
               </div>
-              <h3 className="text-2xl font-bold text-background mb-3">
+              <h3 className="text-2xl font-bold text-foreground mb-3">
                 No Properties Available
               </h3>
-              <p className="text-background/80 mb-6">
+              <p className="text-foreground/80 mb-6">
                 We're currently updating our listings. Check back soon for amazing properties!
               </p>
               <Link to="/properties">
-                <Button className="bg-foreground text-background hover:bg-foreground/90 font-bold">
+                <Button className="bg-background text-primary hover:bg-background/90 font-bold">
                   Browse All Listings
                 </Button>
               </Link>
@@ -297,7 +297,7 @@ const PropertyHighlights = () => {
                                 loading="lazy"
                               />
                             </Link>
-                            <span className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 rounded-full text-sm font-bold z-10">
+                            <span className="absolute top-4 left-4 bg-background text-primary px-3 py-1 rounded-full text-sm font-bold z-10">
                               {propertyBadge}
                             </span>
                             <Button
@@ -360,7 +360,7 @@ const PropertyHighlights = () => {
                               <div className="flex items-center justify-between pt-4 border-t border-border">
                                 <span className="text-2xl font-bold text-foreground">{formatPrice(property.price)}</span>
                                 <Link to={`/properties/${property.id}`}>
-                                  <button className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-bold hover:bg-foreground/90 transition-colors">
+                                  <button className="px-4 py-2 bg-background text-primary rounded-lg text-sm font-bold hover:bg-background/90 transition-colors">
                                     View Details
                                   </button>
                                 </Link>

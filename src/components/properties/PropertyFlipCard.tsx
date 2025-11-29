@@ -148,7 +148,7 @@ const PropertyFlipCard = ({
                   <>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     <motion.span 
-                      className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 rounded-full text-sm font-bold shadow-lg"
+                      className="absolute top-4 left-4 bg-background text-primary px-3 py-1 rounded-full text-sm font-bold shadow-lg"
                       initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + index * 0.08 }}
@@ -350,7 +350,7 @@ const PropertyFlipCard = ({
               <div className="mt-4 pt-4 border-t border-border">
                 <Link to={`/properties/${property.id}`}>
                   <motion.button
-                    className="w-full px-4 py-3 bg-foreground text-background rounded-lg text-sm font-bold hover:bg-foreground/90 transition-colors relative overflow-hidden group"
+                    className="w-full px-4 py-3 bg-background text-primary rounded-lg text-sm font-bold hover:bg-background/90 transition-colors relative overflow-hidden group"
                     whileHover={{ 
                       scale: 1.02,
                       boxShadow: "0 6px 24px hsl(0 0% 0% / 0.2)"
@@ -358,7 +358,7 @@ const PropertyFlipCard = ({
                     whileTap={{ scale: 0.98 }}
                   >
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-foreground/90 to-foreground opacity-0 group-hover:opacity-100"
+                      className="absolute inset-0 bg-gradient-to-r from-background/90 to-background opacity-0 group-hover:opacity-100"
                       transition={{ duration: 0.3 }}
                     />
                     <span className="relative z-10">View Full Details</span>
