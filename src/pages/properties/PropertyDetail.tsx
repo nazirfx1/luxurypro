@@ -51,6 +51,25 @@ const PropertyDetail = () => {
   useEffect(() => {
     if (id) {
       loadProperty(id);
+
+      // Real-time subscription for property updates
+      const channel = supabase
+        .channel(`property-${id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "properties", filter: `id=eq.${id}` },
+          () => loadProperty(id)
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "property_media", filter: `property_id=eq.${id}` },
+          () => loadProperty(id)
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [id]);
 

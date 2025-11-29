@@ -29,6 +29,20 @@ export const MyPropertiesWidget = () => {
     };
 
     loadProperties();
+
+    // Real-time subscription for user's properties
+    const channel = supabase
+      .channel(`my-properties-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties", filter: `created_by=eq.${user.id}` },
+        loadProperties
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   if (loading) {

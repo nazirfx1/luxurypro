@@ -22,6 +22,20 @@ export const AvailablePropertiesWidget = () => {
     };
 
     loadProperties();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel("available-properties-widget")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        loadProperties
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   if (loading) {
