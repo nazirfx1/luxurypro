@@ -8,6 +8,7 @@ import { useLocation } from "react-router-dom";
 const menuItems = [
   { name: "Features", id: "features" },
   { name: "Properties", id: "properties" },
+  { name: "Why Choose Us", id: "why-choose-us" },
   { name: "How It Works", id: "how-it-works" },
   { name: "Testimonials", id: "testimonials" },
   { name: "Blog", id: "blog" }
