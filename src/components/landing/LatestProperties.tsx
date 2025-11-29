@@ -123,7 +123,7 @@ const LatestProperties = () => {
   // Loading skeleton
   if (loading) {
     return (
-      <section className="py-20 md:py-32 bg-muted/30">
+      <section className="py-20 md:py-32 bg-background">
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
@@ -152,7 +152,7 @@ const LatestProperties = () => {
   // Error state
   if (error) {
     return (
-      <section className="py-20 md:py-32 bg-muted/30">
+      <section className="py-20 md:py-32 bg-background">
         <div className="container px-4">
           <div className="text-center">
             <Home className="w-16 h-16 text-destructive mx-auto mb-4" />
@@ -168,7 +168,7 @@ const LatestProperties = () => {
   // Empty state
   if (properties.length === 0) {
     return (
-      <section className="py-20 md:py-32 bg-muted/30">
+      <section className="py-20 md:py-32 bg-background">
         <div className="container px-4">
           <div className="text-center">
             <Home className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
@@ -209,12 +209,12 @@ const LatestProperties = () => {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-muted/30 relative overflow-hidden" ref={ref}>
+    <section className="py-20 md:py-32 bg-background relative overflow-hidden" ref={ref}>
       {/* Subtle animated mesh gradient */}
       <motion.div 
-        className="absolute inset-0 opacity-10 pointer-events-none"
+        className="absolute inset-0 opacity-5 pointer-events-none"
         style={{
-          background: "radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.1) 0%, transparent 50%)",
+          background: "radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.15) 0%, transparent 50%)",
         }}
         animate={{
           scale: [1, 1.1, 1],
