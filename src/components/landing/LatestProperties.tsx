@@ -45,7 +45,6 @@ const LatestProperties = () => {
 
   useEffect(() => {
     const fetchProperties = async () => {
-      console.log("LatestProperties: Starting fetch...");
       setLoading(true);
       setError(null);
       
@@ -66,16 +65,14 @@ const LatestProperties = () => {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error("LatestProperties: Error fetching properties:", fetchError);
+        console.error("Error fetching properties:", fetchError);
         setError("Failed to load properties. Please try again later.");
         setLoading(false);
         return;
       }
 
-      console.log("LatestProperties: Fetched properties:", data);
       if (data) {
         setProperties(data as Property[]);
-        console.log("LatestProperties: Properties count:", data.length);
       }
       setLoading(false);
     };
@@ -177,7 +174,7 @@ const LatestProperties = () => {
   }
 
   return (
-    <section className="py-20 md:py-32 bg-muted/30" ref={ref}>
+    <section className="py-20 md:py-32 bg-background" ref={ref}>
       <div className="container px-4">
         <motion.div 
           className="text-center mb-12 space-y-4"
@@ -186,10 +183,10 @@ const LatestProperties = () => {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-            All <span className="text-primary">Properties</span>
+            Latest <span className="text-primary">Properties</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Browse our complete collection of properties
+            Discover our handpicked selection of premium properties
           </p>
         </motion.div>
 
