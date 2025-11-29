@@ -10,6 +10,14 @@ import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// Property types matching the property creation form
+const PROPERTY_TYPES = [
+  { value: 'residential', label: 'Residential' },
+  { value: 'commercial', label: 'Commercial' },
+  { value: 'industrial', label: 'Industrial' },
+  { value: 'land', label: 'Land' },
+] as const;
+
 interface Property {
   id: string;
   title: string;
@@ -141,12 +149,19 @@ const PropertiesListPublic = () => {
                 <SelectTrigger className="border-none bg-muted/50 text-foreground focus:ring-primary focus:ring-offset-0 h-[50px] hover:bg-muted/70 transition-smooth">
                   <SelectValue placeholder="Property Type" />
                 </SelectTrigger>
-                <SelectContent className="bg-background border-border z-50">
-                  <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10">All Types</SelectItem>
-                  <SelectItem value="apartment" className="hover:bg-primary/10 focus:bg-primary/10">Apartment</SelectItem>
-                  <SelectItem value="house" className="hover:bg-primary/10 focus:bg-primary/10">House</SelectItem>
-                  <SelectItem value="villa" className="hover:bg-primary/10 focus:bg-primary/10">Villa</SelectItem>
-                  <SelectItem value="commercial" className="hover:bg-primary/10 focus:bg-primary/10">Commercial</SelectItem>
+                <SelectContent className="bg-background border-border shadow-lg z-50">
+                  <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">
+                    All Types
+                  </SelectItem>
+                  {PROPERTY_TYPES.map((type) => (
+                    <SelectItem 
+                      key={type.value} 
+                      value={type.value}
+                      className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer"
+                    >
+                      {type.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -212,8 +227,29 @@ const PropertiesListPublic = () => {
         ) : properties.length === 0 ? (
           <div className="text-center py-16">
             <Home className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-2xl font-semibold text-foreground mb-2">No properties found</h3>
-            <p className="text-muted-foreground">Try adjusting your filters</p>
+            <h3 className="text-2xl font-semibold text-foreground mb-2">
+              {propertyType && propertyType !== 'all' 
+                ? `No ${PROPERTY_TYPES.find(t => t.value === propertyType)?.label || ''} properties found`
+                : 'No properties found'}
+            </h3>
+            <p className="text-muted-foreground">
+              {propertyType && propertyType !== 'all'
+                ? `No properties available for this type. Try selecting a different type or adjusting your filters.`
+                : 'Try adjusting your filters'}
+            </p>
+            {(propertyType || searchTerm || priceRange) && (
+              <Button
+                onClick={() => {
+                  setPropertyType('');
+                  setSearchTerm('');
+                  setPriceRange('');
+                }}
+                variant="outline"
+                className="mt-4"
+              >
+                Clear All Filters
+              </Button>
+            )}
           </div>
         ) : (
           <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
