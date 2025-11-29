@@ -209,12 +209,12 @@ const LatestProperties = () => {
   };
 
   return (
-    <section className="py-20 md:py-32 bg-background relative overflow-hidden" ref={ref}>
+    <section className="py-20 md:py-32 bg-muted/30 relative overflow-hidden" ref={ref}>
       {/* Subtle animated mesh gradient */}
       <motion.div 
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
-          background: "radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.08) 0%, transparent 50%)",
+          background: "radial-gradient(circle at 70% 30%, hsl(var(--primary) / 0.1) 0%, transparent 50%)",
         }}
         animate={{
           scale: [1, 1.1, 1],
