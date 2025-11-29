@@ -100,10 +100,10 @@ const PropertyFlipCard = ({
           style={{ backfaceVisibility: "hidden" }}
         >
           <Link to={`/properties/${property.id}`}>
-            <Card className="h-full overflow-hidden border-border hover:border-primary/50 transition-all duration-300 cursor-pointer shadow-elegant hover:shadow-primary/10 relative">
-              {/* Gradient overlay on hover */}
+            <Card className="h-full overflow-hidden border-background/20 bg-background hover:border-foreground/30 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl relative">
+              {/* Subtle gradient overlay on hover */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 z-10 pointer-events-none"
+                className="absolute inset-0 bg-gradient-to-br from-foreground/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 z-10 pointer-events-none"
                 transition={{ duration: 0.4 }}
               />
 
@@ -147,13 +147,13 @@ const PropertyFlipCard = ({
                   <>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     <motion.span 
-                      className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
+                      className="absolute top-4 left-4 bg-foreground text-background px-3 py-1 rounded-full text-sm font-bold shadow-lg"
                       initial={{ opacity: 0, x: -15 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + index * 0.08 }}
                       whileHover={{ 
                         scale: 1.08,
-                        boxShadow: "0 0 15px hsl(var(--primary) / 0.6)"
+                        boxShadow: "0 0 15px hsl(0 0% 0% / 0.3)"
                       }}
                     >
                       {badge}
@@ -161,7 +161,7 @@ const PropertyFlipCard = ({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+                      className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm hover:bg-background z-10 border border-background/20"
                       onClick={(e) => {
                         e.preventDefault();
                         onToggleFavorite(property.id);
@@ -222,14 +222,14 @@ const PropertyFlipCard = ({
 
                   <div className="flex items-center justify-between pt-4 border-t border-border">
                     <motion.span 
-                      className="text-2xl font-bold text-primary"
+                      className="text-2xl font-bold text-foreground"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.3 + index * 0.08 }}
                     >
                       {formatPrice(property.price)}
                     </motion.span>
-                    <div className="text-xs text-muted-foreground">Hover to flip</div>
+                    <div className="text-xs text-muted-foreground font-medium">Hover to flip</div>
                   </div>
                 </div>
               </CardContent>
@@ -245,10 +245,10 @@ const PropertyFlipCard = ({
             transform: "rotateY(180deg)"
           }}
         >
-          <Card className="h-full overflow-hidden border-primary/50 bg-gradient-to-br from-background via-background to-primary/5 shadow-elegant shadow-primary/20">
+          <Card className="h-full overflow-hidden border-foreground/30 bg-background shadow-lg">
             <CardContent className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-primary">Property Details</h3>
+                <h3 className="text-xl font-bold text-foreground">Property Details</h3>
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -349,22 +349,22 @@ const PropertyFlipCard = ({
               <div className="mt-4 pt-4 border-t border-border">
                 <Link to={`/properties/${property.id}`}>
                   <motion.button
-                    className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors relative overflow-hidden group"
+                    className="w-full px-4 py-3 bg-foreground text-background rounded-lg text-sm font-bold hover:bg-foreground/90 transition-colors relative overflow-hidden group"
                     whileHover={{ 
                       scale: 1.02,
-                      boxShadow: "0 6px 24px hsl(var(--primary) / 0.3)"
+                      boxShadow: "0 6px 24px hsl(0 0% 0% / 0.2)"
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-primary-glow to-primary opacity-0 group-hover:opacity-100"
+                      className="absolute inset-0 bg-gradient-to-r from-foreground/90 to-foreground opacity-0 group-hover:opacity-100"
                       transition={{ duration: 0.3 }}
                     />
                     <span className="relative z-10">View Full Details</span>
                   </motion.button>
                 </Link>
                 <div className="text-center mt-2">
-                  <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                  <span className="text-2xl font-bold text-foreground">{formatPrice(property.price)}</span>
                 </div>
               </div>
             </CardContent>
