@@ -118,7 +118,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-muted/20 pt-20">
+    <section className="relative min-h-screen md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-muted/20 pt-24 md:pt-20 pb-12 md:pb-0">
       {/* Animated Background Elements with Parallax */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
@@ -162,11 +162,11 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="container relative z-10 px-4 py-16">
-        <div className="max-w-5xl mx-auto text-center space-y-8">
+      <div className="container relative z-10 px-4 md:px-6 py-8 md:py-16">
+        <div className="max-w-5xl mx-auto text-center space-y-6 md:space-y-8">
           {/* Main Heading */}
           <motion.h1 
-            className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight px-4 md:px-0"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -184,7 +184,7 @@ const HeroSection = () => {
 
           {/* Subheading */}
           <motion.p 
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
+            className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4 md:px-0 leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -195,14 +195,14 @@ const HeroSection = () => {
 
           {/* Search Bar */}
           <motion.div 
-            className="max-w-4xl mx-auto bg-card border border-border rounded-2xl p-6 shadow-xl backdrop-blur-sm"
+            className="max-w-4xl mx-auto bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-elegant"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div className="relative flex items-center gap-3 px-4 py-3 bg-muted/50 rounded-xl">
-                <MapPin className="w-5 h-5 text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
+              <div className="relative flex items-center gap-3 px-3 md:px-4 py-3 bg-muted/50 rounded-xl hover:bg-muted/70 transition-all duration-200 touch-manipulation">
+                <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
                 <Input 
                   ref={locationInputRef}
                   placeholder="Location" 
@@ -210,10 +210,15 @@ const HeroSection = () => {
                   onChange={(e) => setLocation(e.target.value)}
                   onFocus={() => location && setShowCitySuggestions(true)}
                   onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
-                  className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground"
+                  className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground placeholder:text-muted-foreground text-base"
                 />
                 {showCitySuggestions && filteredCities.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <motion.div 
+                    className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-xl z-[100] max-h-60 overflow-y-auto"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
                     {filteredCities.map((city) => (
                       <button
                         key={city.id}
@@ -221,29 +226,29 @@ const HeroSection = () => {
                           setLocation(`${city.name}, ${city.state}`);
                           setShowCitySuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-smooth text-foreground flex items-center gap-2"
+                        className="w-full text-left px-4 py-3 hover:bg-primary/10 active:bg-primary/20 transition-all duration-200 text-foreground flex items-center gap-2 touch-manipulation"
                       >
                         <MapPin className="w-4 h-4 text-primary" />
                         <span>{city.name}, {city.state}</span>
                       </button>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
               </div>
               
-              <div className="flex items-center gap-3">
-                <Home className="w-5 h-5 text-primary ml-3" />
+              <div className="flex items-center gap-3 bg-muted/50 rounded-xl hover:bg-muted/70 transition-all duration-200 px-1 touch-manipulation">
+                <Home className="w-5 h-5 text-primary ml-2 flex-shrink-0" />
                 <Select value={propertyType} onValueChange={setPropertyType}>
-                  <SelectTrigger className="border-none bg-muted/50 text-foreground focus:ring-primary focus:ring-offset-0 h-[50px] hover:bg-muted/70 transition-smooth">
+                  <SelectTrigger className="border-none bg-transparent text-foreground focus:ring-primary focus:ring-offset-0 h-[50px] hover:bg-transparent transition-all text-base">
                     <SelectValue placeholder="Property Type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border-border z-50">
-                    <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">All Types</SelectItem>
+                  <SelectContent className="bg-background border-border shadow-xl z-[100]">
+                    <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">All Types</SelectItem>
                     {propertyTypes.map((type) => (
                       <SelectItem 
                         key={type} 
                         value={type}
-                        className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer capitalize"
+                        className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer capitalize text-base"
                       >
                         {type}
                       </SelectItem>
@@ -252,19 +257,19 @@ const HeroSection = () => {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-5 h-5 text-primary ml-3" />
+              <div className="flex items-center gap-3 bg-muted/50 rounded-xl hover:bg-muted/70 transition-all duration-200 px-1 touch-manipulation">
+                <DollarSign className="w-5 h-5 text-primary ml-2 flex-shrink-0" />
                 <Select value={priceRange} onValueChange={setPriceRange}>
-                  <SelectTrigger className="border-none bg-muted/50 text-foreground focus:ring-primary focus:ring-offset-0 h-[50px] hover:bg-muted/70 transition-smooth">
+                  <SelectTrigger className="border-none bg-transparent text-foreground focus:ring-primary focus:ring-offset-0 h-[50px] hover:bg-transparent transition-all text-base">
                     <SelectValue placeholder="Price Range" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border-border z-50">
-                    <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">All Prices</SelectItem>
-                    <SelectItem value="0-500000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">$0 - $500K</SelectItem>
-                    <SelectItem value="500000-1000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">$500K - $1M</SelectItem>
-                    <SelectItem value="1000000-2000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">$1M - $2M</SelectItem>
-                    <SelectItem value="2000000-5000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">$2M - $5M</SelectItem>
-                    <SelectItem value="5000000+" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer">$5M+</SelectItem>
+                  <SelectContent className="bg-background border-border shadow-xl z-[100]">
+                    <SelectItem value="all" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">All Prices</SelectItem>
+                    <SelectItem value="0-500000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">$0 - $500K</SelectItem>
+                    <SelectItem value="500000-1000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">$500K - $1M</SelectItem>
+                    <SelectItem value="1000000-2000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">$1M - $2M</SelectItem>
+                    <SelectItem value="2000000-5000000" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">$2M - $5M</SelectItem>
+                    <SelectItem value="5000000+" className="hover:bg-primary/10 focus:bg-primary/10 cursor-pointer text-base">$5M+</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -275,7 +280,7 @@ const HeroSection = () => {
               whileTap={{ scale: 0.98 }}
             >
               <Button 
-                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50"
+                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50 text-base md:text-lg h-12 md:h-14 touch-manipulation"
                 size="lg"
                 onClick={handleSearch}
               >
@@ -287,7 +292,7 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
+            className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-4 px-4 md:px-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.7 }}
@@ -295,7 +300,7 @@ const HeroSection = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50"
+                className="w-full sm:w-auto bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow transition-all duration-300 hover:shadow-yellow-lg hover:shadow-primary/50 h-12 md:h-14 px-6 md:px-8 text-base touch-manipulation"
                 onClick={() => navigate('/properties')}
               >
                 Browse Properties
@@ -305,17 +310,17 @@ const HeroSection = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-border hover:bg-muted hover:border-primary/50 transition-all duration-300"
+                className="w-full sm:w-auto border-border hover:bg-muted hover:border-primary/50 transition-all duration-300 h-12 md:h-14 px-6 md:px-8 text-base touch-manipulation"
                 onClick={() => navigate('/auth')}
               >
                 Book a Visit
               </Button>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
               <Button 
                 size="lg" 
                 variant="ghost"
-                className="hover:text-primary transition-all duration-300"
+                className="w-full sm:w-auto hover:text-primary transition-all duration-300 h-12 md:h-14 px-6 md:px-8 text-base touch-manipulation"
                 onClick={() => navigate('/auth')}
               >
                 Create Account
@@ -326,11 +331,11 @@ const HeroSection = () => {
 
         {/* Scroll Indicator */}
         <motion.div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          className="hidden md:block absolute bottom-8 left-1/2 transform -translate-x-1/2"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         >
-          <ChevronDown className="w-8 h-8 text-primary" />
+          <ChevronDown className="w-8 h-8 text-primary opacity-50" />
         </motion.div>
       </div>
     </section>
