@@ -45,6 +45,7 @@ const LatestProperties = () => {
 
   useEffect(() => {
     const fetchProperties = async () => {
+      console.log("LatestProperties: Starting fetch...");
       setLoading(true);
       setError(null);
       
@@ -65,14 +66,16 @@ const LatestProperties = () => {
       const { data, error: fetchError } = await query;
 
       if (fetchError) {
-        console.error("Error fetching properties:", fetchError);
+        console.error("LatestProperties: Error fetching properties:", fetchError);
         setError("Failed to load properties. Please try again later.");
         setLoading(false);
         return;
       }
 
+      console.log("LatestProperties: Fetched properties:", data);
       if (data) {
         setProperties(data as Property[]);
+        console.log("LatestProperties: Properties count:", data.length);
       }
       setLoading(false);
     };
