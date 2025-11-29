@@ -228,86 +228,85 @@ const PropertyHighlights = () => {
             <CarouselContent>
               {properties.map((property) => (
                 <CarouselItem key={property.id}>
-                  <Link to={`/properties/${property.id}`}>
-                    <Card className="overflow-hidden border-border">
+                  <Card className="overflow-hidden border-border">
+                    <Link to={`/properties/${property.id}`}>
                       <div className="relative overflow-hidden aspect-[4/3]">
-                        <Link to={`/properties/${property.id}`}>
-                          <img 
-                            src={property.property_media[0]?.media_url || "/placeholder.svg"} 
-                            alt={property.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </Link>
-                        <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
+                        <img 
+                          src={property.property_media[0]?.media_url || "/placeholder.svg"} 
+                          alt={property.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold z-10">
                           Featured
                         </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleFavorite(property.id);
-                          }}
-                        >
-                          <Heart 
-                            className={`w-5 h-5 transition-all ${
-                              isFavorite(property.id) 
-                                ? 'fill-primary text-primary' 
-                                : 'text-foreground'
-                            }`} 
-                          />
-                        </Button>
                       </div>
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="text-xl font-semibold text-foreground mb-2">
-                              {property.title}
-                            </h3>
-                            <div className="flex items-center gap-1 text-muted-foreground mb-2">
-                              <MapPin className="w-4 h-4" />
-                              <span className="text-sm">{property.city}, {property.state}</span>
-                            </div>
-                            {property.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {property.description}
-                              </p>
-                            )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(property.id);
+                        }}
+                      >
+                        <Heart 
+                          className={`w-5 h-5 transition-all ${
+                            isFavorite(property.id) 
+                              ? 'fill-primary text-primary' 
+                              : 'text-foreground'
+                          }`} 
+                        />
+                      </Button>
+                    </Link>
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-xl font-semibold text-foreground mb-2">
+                            {property.title}
+                          </h3>
+                          <div className="flex items-center gap-1 text-muted-foreground mb-2">
+                            <MapPin className="w-4 h-4" />
+                            <span className="text-sm">{property.city}, {property.state}</span>
                           </div>
-
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            {property.bedrooms && (
-                              <div className="flex items-center gap-1">
-                                <Bed className="w-4 h-4" />
-                                <span>{property.bedrooms}</span>
-                              </div>
-                            )}
-                            {property.bathrooms && (
-                              <div className="flex items-center gap-1">
-                                <Bath className="w-4 h-4" />
-                                <span>{property.bathrooms}</span>
-                              </div>
-                            )}
-                            {property.square_feet && (
-                              <div className="flex items-center gap-1">
-                                <Square className="w-4 h-4" />
-                                <span>{property.square_feet} sqft</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between pt-4 border-t border-border">
-                            <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
-                            <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
-                              View Details
-                            </button>
-                          </div>
+                          {property.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {property.description}
+                            </p>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
+
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {property.bedrooms && (
+                            <div className="flex items-center gap-1">
+                              <Bed className="w-4 h-4" />
+                              <span>{property.bedrooms}</span>
+                            </div>
+                          )}
+                          {property.bathrooms && (
+                            <div className="flex items-center gap-1">
+                              <Bath className="w-4 h-4" />
+                              <span>{property.bathrooms}</span>
+                            </div>
+                          )}
+                          {property.square_feet && (
+                            <div className="flex items-center gap-1">
+                              <Square className="w-4 h-4" />
+                              <span>{property.square_feet} sqft</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </CarouselItem>
               ))}
             </CarouselContent>
