@@ -16,6 +16,7 @@ import {
 interface Property {
   id: string;
   title: string;
+  description: string | null;
   city: string | null;
   state: string | null;
   price: number;
@@ -35,7 +36,7 @@ const LatestProperties = () => {
     const fetchLatestProperties = async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("*, property_media(media_url)")
+        .select("id, title, description, city, state, price, bedrooms, bathrooms, square_feet, property_media(media_url)")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(10);
@@ -76,7 +77,11 @@ const LatestProperties = () => {
     }).format(price);
   };
 
-  if (loading || properties.length === 0) {
+  if (loading) {
+    return null;
+  }
+
+  if (properties.length === 0) {
     return null;
   }
 
@@ -113,6 +118,7 @@ const LatestProperties = () => {
                       src={property.property_media[0]?.media_url || "/placeholder.svg"} 
                       alt={property.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                       whileHover={{ scale: 1.1 }}
                       transition={{ duration: 0.6 }}
                     />
@@ -135,29 +141,47 @@ const LatestProperties = () => {
                         <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                           {property.title}
                         </h3>
-                        <div className="flex items-center gap-1 text-muted-foreground">
+                        <div className="flex items-center gap-1 text-muted-foreground mb-2">
                           <MapPin className="w-4 h-4" />
                           <span className="text-sm">{property.city}, {property.state}</span>
                         </div>
+                        {property.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {property.description}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Bed className="w-4 h-4" />
-                          <span>{property.bedrooms}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Bath className="w-4 h-4" />
-                          <span>{property.bathrooms}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Square className="w-4 h-4" />
-                          <span>{property.square_feet} sqft</span>
-                        </div>
+                        {property.bedrooms && (
+                          <div className="flex items-center gap-1">
+                            <Bed className="w-4 h-4" />
+                            <span>{property.bedrooms}</span>
+                          </div>
+                        )}
+                        {property.bathrooms && (
+                          <div className="flex items-center gap-1">
+                            <Bath className="w-4 h-4" />
+                            <span>{property.bathrooms}</span>
+                          </div>
+                        )}
+                        {property.square_feet && (
+                          <div className="flex items-center gap-1">
+                            <Square className="w-4 h-4" />
+                            <span>{property.square_feet} sqft</span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="pt-4 border-t border-border">
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
                         <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                        <motion.button
+                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View Details
+                        </motion.button>
                       </div>
                     </div>
                   </CardContent>
@@ -180,6 +204,7 @@ const LatestProperties = () => {
                           src={property.property_media[0]?.media_url || "/placeholder.svg"} 
                           alt={property.title}
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                         <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
                           New
@@ -191,29 +216,43 @@ const LatestProperties = () => {
                             <h3 className="text-xl font-semibold text-foreground mb-2">
                               {property.title}
                             </h3>
-                            <div className="flex items-center gap-1 text-muted-foreground">
+                            <div className="flex items-center gap-1 text-muted-foreground mb-2">
                               <MapPin className="w-4 h-4" />
                               <span className="text-sm">{property.city}, {property.state}</span>
                             </div>
+                            {property.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {property.description}
+                              </p>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Bed className="w-4 h-4" />
-                              <span>{property.bedrooms}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Bath className="w-4 h-4" />
-                              <span>{property.bathrooms}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Square className="w-4 h-4" />
-                              <span>{property.square_feet} sqft</span>
-                            </div>
+                            {property.bedrooms && (
+                              <div className="flex items-center gap-1">
+                                <Bed className="w-4 h-4" />
+                                <span>{property.bedrooms}</span>
+                              </div>
+                            )}
+                            {property.bathrooms && (
+                              <div className="flex items-center gap-1">
+                                <Bath className="w-4 h-4" />
+                                <span>{property.bathrooms}</span>
+                              </div>
+                            )}
+                            {property.square_feet && (
+                              <div className="flex items-center gap-1">
+                                <Square className="w-4 h-4" />
+                                <span>{property.square_feet} sqft</span>
+                              </div>
+                            )}
                           </div>
 
-                          <div className="pt-4 border-t border-border">
+                          <div className="flex items-center justify-between pt-4 border-t border-border">
                             <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                            <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold">
+                              View Details
+                            </button>
                           </div>
                         </div>
                       </CardContent>
