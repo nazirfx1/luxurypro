@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookVisitDialog from "@/components/properties/BookVisitDialog";
+import { BookPropertyDialog } from "@/components/properties/BookPropertyDialog";
 import PropertyAmenities from "@/components/properties/PropertyAmenities";
 import SimilarProperties from "@/components/properties/SimilarProperties";
 
@@ -379,7 +380,10 @@ const PropertyDetailPublic = () => {
           <div className="space-y-6">
             <Card className="p-6 sticky top-24">
               <h3 className="font-semibold mb-4 text-lg">Book a Visit</h3>
-              <BookVisitDialog propertyId={id!} propertyTitle={property.title} />
+              <div className="space-y-3">
+                <BookVisitDialog propertyId={id!} propertyTitle={property.title} />
+                <BookPropertyDialog propertyId={id!} propertyTitle={property.title} />
+              </div>
             </Card>
 
             <Card className="p-6">
