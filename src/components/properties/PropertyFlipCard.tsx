@@ -68,7 +68,8 @@ const PropertyFlipCard = ({
       />
       
       <motion.div
-      className="relative h-[500px] perspective-1000"
+      className="relative h-[500px]"
+      style={{ perspective: "1000px" }}
       onHoverStart={() => setIsFlipped(true)}
       onHoverEnd={() => setIsFlipped(false)}
       initial={{ opacity: 0, y: 60, scale: 0.95 }}
