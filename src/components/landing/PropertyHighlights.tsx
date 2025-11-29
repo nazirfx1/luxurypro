@@ -34,6 +34,7 @@ const PropertyHighlights = () => {
 
   useEffect(() => {
     const fetchFeaturedProperties = async () => {
+      console.log('Fetching featured properties...');
       const { data, error } = await supabase
         .from("properties")
         .select("id, title, description, city, state, price, bedrooms, bathrooms, square_feet, property_media(media_url)")
@@ -41,6 +42,9 @@ const PropertyHighlights = () => {
         .eq("is_featured", true)
         .order("updated_at", { ascending: false })
         .limit(10);
+
+      console.log('Featured properties data:', data);
+      console.log('Featured properties error:', error);
 
       if (!error && data) {
         setProperties(data as Property[]);
@@ -78,25 +82,11 @@ const PropertyHighlights = () => {
     }).format(price);
   };
 
-  if (loading) {
-    return null;
-  }
+  // Always render the section, show loading or empty state as needed
+  const shouldShowSection = loading || properties.length > 0;
 
-  if (properties.length === 0) {
-    return (
-      <section className="py-20 md:py-32 bg-background">
-        <div className="container px-4">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-              Featured <span className="text-primary">Properties</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              No featured properties available at the moment. Check back soon!
-            </p>
-          </div>
-        </div>
-      </section>
-    );
+  if (!shouldShowSection) {
+    return null;
   }
 
   return (
@@ -116,8 +106,32 @@ const PropertyHighlights = () => {
           </p>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-muted" />
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="flex gap-4">
+                      <div className="h-4 bg-muted rounded w-16" />
+                      <div className="h-4 bg-muted rounded w-16" />
+                      <div className="h-4 bg-muted rounded w-16" />
+                    </div>
+                    <div className="h-8 bg-muted rounded w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
         {/* Desktop Grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {!loading && properties.length > 0 && (
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {properties.map((property, index) => (
             <motion.div
               key={property.id}
@@ -205,8 +219,11 @@ const PropertyHighlights = () => {
           ))}
         </div>
 
+        )}
+
         {/* Mobile Carousel */}
-        <div className="md:hidden">
+        {!loading && properties.length > 0 && (
+          <div className="md:hidden">
           <Carousel className="w-full">
             <CarouselContent>
               {properties.map((property) => (
@@ -278,7 +295,8 @@ const PropertyHighlights = () => {
             <CarouselPrevious />
             <CarouselNext />
           </Carousel>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
