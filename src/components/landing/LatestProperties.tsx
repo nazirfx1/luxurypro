@@ -1,11 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Square, Home } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Home, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useFavorites } from "@/hooks/useFavorites";
 import {
   Select,
   SelectContent,
@@ -42,6 +43,7 @@ const LatestProperties = () => {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("newest");
   const [error, setError] = useState<string | null>(null);
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -252,6 +254,23 @@ const LatestProperties = () => {
                         >
                           Active
                         </motion.span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90 z-10"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleFavorite(property.id);
+                          }}
+                        >
+                          <Heart 
+                            className={`w-5 h-5 transition-all ${
+                              isFavorite(property.id) 
+                                ? 'fill-primary text-primary' 
+                                : 'text-foreground'
+                            }`} 
+                          />
+                        </Button>
                       </>
                     )}
                   </div>
@@ -337,9 +356,28 @@ const LatestProperties = () => {
                           </div>
                         )}
                         {hasImage && (
-                          <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
-                            Active
-                          </span>
+                          <>
+                            <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
+                              Active
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleFavorite(property.id);
+                              }}
+                            >
+                              <Heart 
+                                className={`w-5 h-5 transition-all ${
+                                  isFavorite(property.id) 
+                                    ? 'fill-primary text-primary' 
+                                    : 'text-foreground'
+                                }`} 
+                              />
+                            </Button>
+                          </>
                         )}
                       </div>
                       <CardContent className="p-6">
