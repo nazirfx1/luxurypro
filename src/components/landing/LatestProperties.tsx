@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
+import { SharePropertyDialog } from "@/components/properties/SharePropertyDialog";
 import {
   Select,
   SelectContent,
@@ -276,20 +277,28 @@ const LatestProperties = () => {
                   </div>
                   <CardContent className="p-6">
                     <div className="space-y-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                          {property.title}
-                        </h3>
-                        <div className="flex items-center gap-1 text-muted-foreground mb-2">
-                          <MapPin className="w-4 h-4" />
-                          <span className="text-sm">{property.city}, {property.state}</span>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                            {property.title}
+                          </h3>
+                          <div className="flex items-center gap-1 text-muted-foreground mb-2">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-sm">{property.city}, {property.state}</span>
+                          </div>
                         </div>
-                        {property.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {property.description}
-                          </p>
-                        )}
+                        <SharePropertyDialog
+                          propertyId={property.id}
+                          propertyTitle={property.title}
+                          propertyPrice={property.price}
+                          propertyImage={property.property_media[0]?.media_url}
+                        />
                       </div>
+                      {property.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {property.description}
+                        </p>
+                      )}
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         {property.bedrooms && (
