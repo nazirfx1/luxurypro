@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import PropertyHighlights from "@/components/landing/PropertyHighlights";
+import LatestProperties from "@/components/landing/LatestProperties";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import HowItWorks from "@/components/landing/HowItWorks";
 import BookVisitCTA from "@/components/landing/BookVisitCTA";
@@ -16,6 +17,7 @@ const Index = () => {
       <HeroSection />
       <div id="properties">
         <PropertyHighlights />
+        <LatestProperties />
       </div>
       <div id="features">
         <WhyChooseUs />

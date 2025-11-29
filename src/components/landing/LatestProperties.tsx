@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Bed, Bath, Square, Star } from "lucide-react";
+import { MapPin, Bed, Bath, Square } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
@@ -25,20 +25,19 @@ interface Property {
   property_media: Array<{ media_url: string }>;
 }
 
-const PropertyHighlights = () => {
+const LatestProperties = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeaturedProperties = async () => {
+    const fetchLatestProperties = async () => {
       const { data, error } = await supabase
         .from("properties")
         .select("*, property_media(media_url)")
         .eq("status", "active")
-        .eq("is_featured", true)
-        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(10);
 
       if (!error && data) {
@@ -47,20 +46,20 @@ const PropertyHighlights = () => {
       setLoading(false);
     };
 
-    fetchFeaturedProperties();
+    fetchLatestProperties();
 
     // Realtime subscription
     const channel = supabase
-      .channel("featured-properties-landing")
+      .channel("latest-properties-landing")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "properties" },
-        fetchFeaturedProperties
+        fetchLatestProperties
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "property_media" },
-        fetchFeaturedProperties
+        fetchLatestProperties
       )
       .subscribe();
 
@@ -82,7 +81,7 @@ const PropertyHighlights = () => {
   }
 
   return (
-    <section className="py-20 md:py-32 bg-background" ref={ref}>
+    <section className="py-20 md:py-32 bg-muted/30" ref={ref}>
       <div className="container px-4">
         <motion.div 
           className="text-center mb-16 space-y-4"
@@ -91,10 +90,10 @@ const PropertyHighlights = () => {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold text-foreground">
-            Featured <span className="text-primary">Properties</span>
+            Latest <span className="text-primary">Properties</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Handpicked luxury properties in prime locations
+            Discover our newest property listings
           </p>
         </motion.div>
 
@@ -127,9 +126,9 @@ const PropertyHighlights = () => {
                       className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-yellow"
                       whileHover={{ scale: 1.05 }}
                     >
-                      Featured
+                      New
                     </motion.span>
-                </div>
+                  </div>
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       <div>
@@ -157,9 +156,8 @@ const PropertyHighlights = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="pt-4 border-t border-border">
                         <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
-                        <Star className="w-5 h-5 text-primary fill-primary" />
                       </div>
                     </div>
                   </CardContent>
@@ -184,7 +182,7 @@ const PropertyHighlights = () => {
                           className="w-full h-full object-cover"
                         />
                         <span className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
-                          Featured
+                          New
                         </span>
                       </div>
                       <CardContent className="p-6">
@@ -214,9 +212,8 @@ const PropertyHighlights = () => {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <div className="pt-4 border-t border-border">
                             <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
-                            <Star className="w-5 h-5 text-primary fill-primary" />
                           </div>
                         </div>
                       </CardContent>
@@ -234,4 +231,4 @@ const PropertyHighlights = () => {
   );
 };
 
-export default PropertyHighlights;
+export default LatestProperties;

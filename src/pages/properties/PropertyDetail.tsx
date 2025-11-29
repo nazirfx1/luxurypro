@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   Edit,
@@ -18,6 +20,7 @@ import {
   MapPin,
   Building2,
   Loader2,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -114,6 +117,23 @@ const PropertyDetail = () => {
     }
   };
 
+  const toggleFeatured = async () => {
+    try {
+      const { error } = await supabase
+        .from("properties")
+        .update({ is_featured: !property.is_featured })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setProperty({ ...property, is_featured: !property.is_featured });
+      toast.success(property.is_featured ? "Removed from featured" : "Marked as featured");
+    } catch (error) {
+      toast.error("Failed to update featured status");
+      console.error(error);
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -166,6 +186,17 @@ const PropertyDetail = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mr-4">
+              <Switch
+                id="featured"
+                checked={property.is_featured || false}
+                onCheckedChange={toggleFeatured}
+              />
+              <Label htmlFor="featured" className="flex items-center gap-2 cursor-pointer">
+                <Star className={`w-4 h-4 ${property.is_featured ? "fill-primary text-primary" : ""}`} />
+                Featured
+              </Label>
+            </div>
             <Button variant="outline" onClick={() => navigate(`/dashboard/properties/${id}/edit`)}>
               <Edit className="w-4 h-4 mr-2" />
               Edit

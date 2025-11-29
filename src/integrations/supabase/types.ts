@@ -159,6 +159,59 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          property_id: string
+          start_date: string
+          status: string | null
+          updated_at: string | null
+          visitor_email: string
+          visitor_name: string
+          visitor_phone: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          property_id: string
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+          visitor_email: string
+          visitor_name: string
+          visitor_phone: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          property_id?: string
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
+          visitor_email?: string
+          visitor_name?: string
+          visitor_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_conversations: {
         Row: {
           created_at: string | null
@@ -854,6 +907,7 @@ export type Database = {
           description: string | null
           features: Json | null
           id: string
+          is_featured: boolean | null
           listing_type: string | null
           lot_size: number | null
           owner_id: string | null
@@ -880,6 +934,7 @@ export type Database = {
           description?: string | null
           features?: Json | null
           id?: string
+          is_featured?: boolean | null
           listing_type?: string | null
           lot_size?: number | null
           owner_id?: string | null
@@ -906,6 +961,7 @@ export type Database = {
           description?: string | null
           features?: Json | null
           id?: string
+          is_featured?: boolean | null
           listing_type?: string | null
           lot_size?: number | null
           owner_id?: string | null
