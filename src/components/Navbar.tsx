@@ -136,59 +136,89 @@ const Navbar = () => {
           </motion.div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+          <motion.button
+            className="md:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            whileTap={{ scale: 0.95 }}
           >
-            {isMenuOpen ? (
-              <X className="w-6 h-6 text-foreground" />
-            ) : (
-              <Menu className="w-6 h-6 text-foreground" />
-            )}
-          </button>
+            <motion.div
+              animate={isMenuOpen ? { rotate: 90 } : { rotate: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isMenuOpen ? (
+                <X className="w-6 h-6 text-foreground" />
+              ) : (
+                <Menu className="w-6 h-6 text-foreground" />
+              )}
+            </motion.div>
+          </motion.button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu with AnimatePresence */}
         {isMenuOpen && (
           <motion.div 
-            className="md:hidden py-6 space-y-4 border-t border-border"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            className="md:hidden py-6 space-y-1 border-t border-border bg-background/95 backdrop-blur-lg"
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            {menuItems.map((item) => {
+            {menuItems.map((item, index) => {
               const isActive = activeSection === item.id;
               
               return (
-                <button
+                <motion.button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`block w-full text-left py-2 text-sm font-medium transition-colors ${
-                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  className={`block w-full text-left px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
+                    isActive 
+                      ? 'text-primary bg-primary/10' 
+                      : 'text-foreground hover:text-primary hover:bg-muted/50'
                   }`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  {item.name}
-                </button>
+                  <div className="flex items-center justify-between">
+                    <span>{item.name}</span>
+                    {isActive && (
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-primary"
+                        layoutId="activeIndicator"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </div>
+                </motion.button>
               );
             })}
-            <div className="flex flex-col space-y-2 pt-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full text-foreground hover:text-primary" 
-                onClick={() => window.location.href = '/auth'}
-              >
-                Sign In
-              </Button>
-              <Button 
-                size="sm" 
-                className="w-full bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow"
-                onClick={() => window.location.href = '/auth'}
-              >
-                Get Started
-              </Button>
-            </div>
+            <motion.div 
+              className="flex flex-col space-y-3 pt-6 px-4 border-t border-border mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
+              <motion.div whileTap={{ scale: 0.98 }}>
+                <Button 
+                  variant="ghost" 
+                  size="lg" 
+                  className="w-full justify-center text-foreground hover:text-primary hover:bg-muted/50 transition-all duration-200" 
+                  onClick={() => window.location.href = '/auth'}
+                >
+                  Sign In
+                </Button>
+              </motion.div>
+              <motion.div whileTap={{ scale: 0.98 }}>
+                <Button 
+                  size="lg" 
+                  className="w-full justify-center bg-primary hover:bg-primary-hover text-primary-foreground shadow-yellow hover:shadow-yellow-lg transition-all duration-300"
+                  onClick={() => window.location.href = '/auth'}
+                >
+                  Get Started
+                </Button>
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </div>
