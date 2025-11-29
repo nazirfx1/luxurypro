@@ -204,12 +204,7 @@ const PropertyHighlights = () => {
 
         {/* Desktop Grid with 3D Flip Cards */}
         {!loading && properties.length > 0 && (
-          <motion.div 
-            className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-          >
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {properties.map((property, index) => (
               <PropertyFlipCard
                 key={property.id}
@@ -220,7 +215,7 @@ const PropertyHighlights = () => {
                 badge="Featured"
               />
             ))}
-          </motion.div>
+          </div>
         )}
         {!loading && properties.length > 0 && (
           <div className="md:hidden">
